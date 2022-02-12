@@ -5,4 +5,4 @@ using System.Runtime.CompilerServices;
 // このファイルにはいかなる実装も書かないでください
 
 // Edanoue.TestAPI.Editor
-[assembly: InternalsVisibleTo("Edanoue.TestAPI.Editor")]
+[assembly: InternalsVisibleTo("Edanoue.SceneTest.Editor")]

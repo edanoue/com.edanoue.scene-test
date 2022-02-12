@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     public enum Status
     {

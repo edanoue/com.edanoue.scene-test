@@ -2,8 +2,9 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework.Interfaces;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     public interface ITestRunner
     {
@@ -22,6 +23,6 @@ namespace Edanoue.TestAPI
         /// 直近で実行したテストの実行結果のレポートのリストを取得
         /// </summary>
         /// <value></value>
-        List<ITestReport> LatestReports { get; }
+        List<ITestResult> LatestReports { get; }
     }
 }

@@ -1,12 +1,8 @@
 {
-    "name": "Edanoue.TestAPI.Editor",
-    "rootNamespace": "Edanoue.TestAPI",
-    "references": [
-        "GUID:6a58782c847e151479c584acbe6175dd"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "name": "Edanoue.SceneTest",
+    "rootNamespace": "Edanoue.SceneTest",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,

@@ -3,9 +3,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
 using UnityEngine;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     /// <summary>
     ///
@@ -16,7 +18,7 @@ namespace Edanoue.TestAPI
 
         IEnumerator ITestRunner.Run(RunnerOptions? options) => this.Run(options);
         void ITestRunner.Cancel() => this.Cancel();
-        List<ITestReport> ITestRunner.LatestReports => _lastRunningTestReports;
+        List<ITestResult> ITestRunner.LatestReports => _lastRunningTestReports;
 
         #endregion
 
@@ -25,7 +27,7 @@ namespace Edanoue.TestAPI
         /// </summary>
         /// <returns></returns>
         readonly List<ITestCase> _cachedTestCases = new();
-        readonly List<ITestReport> _lastRunningTestReports = new();
+        readonly List<ITestResult> _lastRunningTestReports = new();
 
         bool _bReceivedCacheRequest;
         bool _isRunning;
@@ -151,7 +153,7 @@ namespace Edanoue.TestAPI
                 // Custon Info に ゲームオブジェクト情報も入れておく
                 if (test is MonoBehaviour mb)
                 {
-                    report.CustomInfos.Add("GameObject", mb.gameObject.name);
+                    // report.CustomInfos.Add("GameObject", mb.gameObject.name);
                 }
 
                 // Custom Info に タイムアウト情報も入れておく
@@ -161,11 +163,11 @@ namespace Edanoue.TestAPI
 
                     if (globalTimeoutSec > localTimeoutSec)
                     {
-                        report.CustomInfos.Add("timeoutSec", $"{localTimeoutSec} (local)");
+                        // report.CustomInfos.Add("timeoutSec", $"{localTimeoutSec} (local)");
                     }
                     else
                     {
-                        report.CustomInfos.Add("timeoutSec", $"{globalTimeoutSec} (global)");
+                        // report.CustomInfos.Add("timeoutSec", $"{globalTimeoutSec} (global)");
                     }
                 }
 

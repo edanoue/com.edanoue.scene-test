@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// 各 TestCase に local に適用されるオプション

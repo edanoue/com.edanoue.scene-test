@@ -9,8 +9,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
 
     /// <summary>
@@ -119,7 +120,7 @@ namespace Edanoue.TestAPI
             if (runner == null)
             {
                 createdRunnerGo = new GameObject("__runner__");
-                runner = createdRunnerGo.AddComponent<TestAPI.TestRunner>();
+                runner = createdRunnerGo.AddComponent<SceneTest.TestRunner>();
                 Debug.Log("Created new TestRunner");
             }
 
@@ -150,12 +151,14 @@ namespace Edanoue.TestAPI
 
             foreach (var report in reports)
             {
-                reportsStr += $"{report.Name}: {report.Status}\n";
+                reportsStr += $"{report.Name}: {report.ResultState}\n";
                 reportsStr += $"msg: {report.Message}\n";
+                /*
                 foreach (var pair in report.CustomInfos)
                 {
                     reportsStr += $"{pair.Key}: {pair.Value}\n";
                 }
+                */
                 reportsStr += $"--------------------------\n";
             }
 
@@ -164,7 +167,7 @@ namespace Edanoue.TestAPI
             foreach (var report in reports)
             {
                 // テストが失敗していた時
-                if (report.Status == Status.Failed)
+                if (report.ResultState == ResultState.Failure)
                 {
                     // TODO: まとめてログ出したいよね
                     var message = $"{report.Name}: {report.Message}";

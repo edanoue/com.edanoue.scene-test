@@ -2,8 +2,12 @@
 
 using System.Collections;
 using UnityEngine;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
 
-namespace Edanoue.TestAPI
+using Edanoue.SceneTest;
+
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// テストケース として振る舞う拡張 MonoBehaviour クラス
@@ -12,11 +16,11 @@ namespace Edanoue.TestAPI
     {
         #region IEdaTestCase
 
-        bool ITestCase.IsRunning => this.IsRunning;
+        bool ITestCase.IsRunning => this._isRunning;
         void ITestCase.OnRun() => this.OnRun();
         void ITestCase.OnCancel() => this.OnCancel();
         void ITestCase.OnTimeout() => this.OnTimeout();
-        ITestReport ITestCase.Report => this._testReport;
+        ITestResult ITestCase.Report => this._testReport;
         CaseOptions ITestCase.Options => this._localOptions;
 
         #endregion
@@ -63,68 +67,47 @@ namespace Edanoue.TestAPI
 
         #region 内部処理用
 
-        TestReport _testReport;
+        bool _isRunning;
+        SceneTestCaseResult? _testReport;
         CaseOptions _localOptions;
-
-        bool IsCreated => _testReport.TestStatus == Status.Created;
-        bool IsRunning => _testReport.TestStatus == Status.Running;
-        bool IsSucceeded => _testReport.TestStatus == Status.Succeed;
-        bool IsFailed => _testReport.TestStatus == Status.Failed;
-        bool IsCanceled => _testReport.TestStatus == Status.Canceled;
-        bool IsCompleted => IsSucceeded || IsFailed || IsCanceled;
-
-        // テストレポートの初期化
-        private void _createNewTestReport()
-        {
-            // Create new test report
-            //   TestCaseName:   class name
-            //   GameObjectName: attatched gameobject name
-            _testReport = new(TestName, this.gameObject.name);
-        }
+        SceneTestCase? _testcase;
 
         /// <summary>
         /// Runner により呼ばれるテスト開始のコールバック
         /// </summary>
-        protected virtual void OnRun()
+        private void OnRun()
         {
-            // 実行中の場合は無視する
-            if (IsRunning)
+            // すでに テストレポートが生成されてたら無視する
+            // Runner からの実行前に Awake などで呼ばれているパターン
+            if (_testReport is not null)
             {
                 return;
             }
 
-            // すでに結果が決まっている場合はどうするか
-            // たとえば Awake 内などで すでに結果が代入されている場合がある
-            // 何回もテストを実行するよりも, Awake の柔軟性を出したほうが良さそう
-            // TODO: この実装にしてしまうと, 一度結果が確定したテストはもう動かなくなってしまう
-            // TODO: 何回も実行したい場合は, Reset などのAPI を用意することで対応する
-            if (IsCompleted)
+            if (!_isRunning)
             {
-                return;
+                _testcase = new("まああ");
+                _testReport = new SceneTestCaseResult(_testcase);
+
+                // 実行時点で Inspector に設定されているものからオプションを作成する
+                _localOptions = new(
+                    localTimeoutSeconds: m_timeoutSeconds
+                );
+
+                Debug.Log($"Run {_testReport!.FullName}", this);
+                _isRunning = true;
             }
-
-            _createNewTestReport();
-
-            // 実行時点で Inspector に設定されているものからオプションを作成する
-            _localOptions = new(
-                localTimeoutSeconds: m_timeoutSeconds
-            );
-
-            // Set Status to Running
-            _testReport.TestStatus = Status.Running;
-
-            Debug.Log($"Run {_testReport.TestName}", this);
         }
 
         /// <summary>
         /// Runner により呼ばれるテストキャンセルのコールバック
         /// </summary>
-        protected virtual void OnCancel()
+        private void OnCancel()
         {
-            if (IsRunning)
+            if (_isRunning)
             {
-                _testReport.TestStatus = Status.Canceled;
-                _testReport.Message = "Manually canceled";
+                _testReport!.SetResult(ResultState.Cancelled, "Manually canceled");
+                _isRunning = false;
             }
         }
 
@@ -133,22 +116,17 @@ namespace Edanoue.TestAPI
         /// Runner によりテストが実行されていない状態であっても先に結果の代入は行える
         /// </summary>
         /// <param name="message"></param>
-        protected void Success(string message = "")
+        protected void Success(string? message)
         {
-            // まだRunner によりテストが実行されていない状態
-            // 例えば Awake などですでにテスト結果が決まっているときなど
-            if (IsCreated)
+            // Awake などで実行されたとき
+            if (_testcase is null)
             {
-                // まだテストレポートが作成されていないので新規に作成する
-                _createNewTestReport();
+                _testcase = new("まああ");
+                _testReport = new SceneTestCaseResult(_testcase);
             }
-
-            if (!IsCompleted)
-            {
-                _testReport.TestStatus = Status.Succeed;
-                _testReport.Message = message;
-                OnSuccess();
-            }
+            // 結果を代入する
+            _testReport.SetResult(ResultState.Success, message);
+            _isRunning = false;
         }
 
         /// <summary>
@@ -156,22 +134,17 @@ namespace Edanoue.TestAPI
         /// Runner によりテストが実行されていない状態であっても先に結果の代入は行える
         /// </summary>
         /// <param name="message"></param>
-        protected void Fail(string message = "")
+        protected void Fail(string? message)
         {
-            // まだRunner によりテストが実行されていない状態
-            // 例えば Awake などですでにテスト結果が決まっているときなど
-            if (IsCreated)
+            // Awake などで実行されたとき
+            if (_testcase is null)
             {
-                // まだテストレポートが作成されていないので新規に作成する
-                _createNewTestReport();
+                _testcase = new("まああ");
+                _testReport = new SceneTestCaseResult(_testcase);
             }
-
-            if (!IsCompleted)
-            {
-                _testReport.TestStatus = Status.Failed;
-                _testReport.Message = message;
-                OnFail();
-            }
+            // 結果を代入する
+            _testReport.SetResult(ResultState.Failure, message);
+            _isRunning = false;
         }
 
         #endregion

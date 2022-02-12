@@ -1,7 +1,10 @@
-#nullable enable
-using System.Collections;
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
 
-namespace Edanoue.TestAPI
+#nullable enable
+
+using NUnit.Framework.Interfaces;
+
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// TestRunner から操作されるのためのインタフェース
@@ -32,7 +35,7 @@ namespace Edanoue.TestAPI
         /// <summary>
         /// テストレポートを取得する
         /// </summary>
-        ITestReport Report { get; }
+        ITestResult Report { get; }
 
         /// <summary>
         /// TestCase Local の Option を取得
