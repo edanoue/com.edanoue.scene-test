@@ -1,7 +1,7 @@
 #nullable enable
 #if UNITY_EDITOR
 
-using Edanoue.TestAPI;
+using Edanoue.SceneTest;
 
 /// <summary>
 /// Unity の Inspector のチェックボックスにより可否が決まるテストクラス

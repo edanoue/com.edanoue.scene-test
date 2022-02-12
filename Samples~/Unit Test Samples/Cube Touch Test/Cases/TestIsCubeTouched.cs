@@ -2,7 +2,7 @@
 #if UNITY_EDITOR
 
 using UnityEngine;
-using Edanoue.TestAPI;
+using Edanoue.SceneTest;
 
 /// <summary>
 /// シーン内にあるキューブが触れたら成功するテスト

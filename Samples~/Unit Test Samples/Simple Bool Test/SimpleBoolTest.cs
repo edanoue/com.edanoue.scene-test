@@ -4,7 +4,7 @@
 
 using System.Collections;
 using UnityEngine.TestTools;
-using Edanoue.TestAPI;
+using Edanoue.SceneTest;
 
 class SimpleBoolTest : SceneLoadSuiteBase
 {
