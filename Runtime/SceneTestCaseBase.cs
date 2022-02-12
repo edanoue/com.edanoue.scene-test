@@ -46,7 +46,7 @@ namespace Edanoue.SceneTest
         /// 継承先でオーバーライドできるテスト名
         /// デフォルトではクラス名を使用する
         /// </summary>
-        protected virtual string TestName => m_customTestName == "" ? this.GetType().Name : m_customTestName;
+        protected virtual string TestName => string.IsNullOrEmpty(m_customTestName) ? this.GetType().Name : m_customTestName;
 
         // 成功したときのコールバック, ここでは空にしておく
         protected virtual void OnSuccess() { }
@@ -74,6 +74,7 @@ namespace Edanoue.SceneTest
         {
             _testcase = new(this.TestName);
             _testResult = (SceneTestCaseResult)_testcase.MakeTestResult();
+            _testResult.StartTime = System.DateTime.UtcNow;
         }
 
         /// <summary>
@@ -110,6 +111,8 @@ namespace Edanoue.SceneTest
             if (_isRunning)
             {
                 _testResult!.SetResult(ResultState.Cancelled, "Manually canceled");
+                _testResult.EndTime = System.DateTime.UtcNow;
+                _testResult.Duration = (_testResult.EndTime - _testResult.StartTime).TotalSeconds;
                 _isRunning = false;
             }
         }
@@ -128,6 +131,8 @@ namespace Edanoue.SceneTest
             }
             // 結果を代入する
             _testResult.SetResult(ResultState.Success, message);
+            _testResult.EndTime = System.DateTime.UtcNow;
+            _testResult.Duration = (_testResult.EndTime - _testResult.StartTime).TotalSeconds;
             _isRunning = false;
         }
 
@@ -145,6 +150,8 @@ namespace Edanoue.SceneTest
             }
             // 結果を代入する
             _testResult.SetResult(ResultState.Failure, message);
+            _testResult.EndTime = System.DateTime.UtcNow;
+            _testResult.Duration = (_testResult.EndTime - _testResult.StartTime).TotalSeconds;
             _isRunning = false;
         }
 
