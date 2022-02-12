@@ -1,7 +1,7 @@
 {
     "name": "com.edanoue.scenetest",
     "description": "Scene Test",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "displayName": "Scene Test",
     "unity": "2021.2",
     "dependencies": {
