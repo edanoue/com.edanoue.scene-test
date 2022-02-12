@@ -12,7 +12,7 @@ namespace Edanoue.SceneTest
     /// </summary>
     public abstract class SceneTestCaseBase : MonoBehaviour, ISceneTestCase
     {
-        #region IEdaTestCase
+        #region Edanoue.SceneTest.ISceneTestCase impls
 
         bool ISceneTestCase.IsRunning => this._isRunning;
         void ISceneTestCase.OnRun() => this.OnRun();
