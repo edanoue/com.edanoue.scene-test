@@ -11,7 +11,7 @@ namespace Edanoue.SceneTest
     /// <summary>
     /// 
     /// </summary>
-    public class SceneTestCaseResult : TestResult
+    internal class SceneTestCaseResult : TestResult
     {
         /// <summary>
         /// Construct a TestCaseResult based on a TestMethod

@@ -11,7 +11,7 @@ namespace Edanoue.SceneTest
     /// <summary>
     /// 
     /// </summary>
-    public class SceneTestCase : Test
+    internal class SceneTestCase : Test
     {
         public SceneTestCase(string name) : base(name) { }
 

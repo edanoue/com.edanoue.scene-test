@@ -8,7 +8,7 @@ namespace Edanoue.SceneTest
     /// EdaTestBehaviour 継承クラスで表示するカスタムエディタ
     /// </summary>
     [CustomEditor(typeof(SceneTestCaseBase), true)]
-    public class SceneTestCaseDrawer : Editor
+    internal class SceneTestCaseDrawer : Editor
     {
         /// <summary>
         /// InspectorのGUIを更新
