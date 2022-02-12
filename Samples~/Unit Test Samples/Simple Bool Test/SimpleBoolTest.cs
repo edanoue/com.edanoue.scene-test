@@ -3,14 +3,11 @@
 #if UNITY_EDITOR
 
 using System.Collections;
-using UnityEngine.TestTools;
 using Edanoue.SceneTest;
 
 class SimpleBoolTest : SceneLoadSuiteBase
 {
-    protected override string ScenePath => $"{ScriptDir()}/SceneTest_SimpleBoolTest.unity";
-
-    [UnityTest]
+    [UnitySceneTest("Assets/com.edanoue.scenetest/Samples/Unit Test Samples/Simple Bool Test/SceneTest_SimpleBoolTest.unity")]
     public IEnumerator RunSceneTest()
     {
         yield return RunTestAsync();
