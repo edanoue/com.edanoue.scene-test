@@ -8,7 +8,7 @@ using Edanoue.SceneTest;
 /// シーン内にあるキューブが触れたら失敗するテスト
 /// Timeout したときにのみ成功扱いとする
 /// </summary>
-public class TestIsCubeNotTouched : EdaTestBehaviour
+public class TestIsCubeNotTouched : SceneTestCaseBase
 {
     // テスト名を C# 側で強制的に設定する
     protected override string TestName => "キューブが触れたら失敗のテスト";

@@ -7,7 +7,7 @@ using Edanoue.SceneTest;
 /// <summary>
 /// シーン内にあるキューブが触れたら成功するテスト
 /// </summary>
-class TestIsCubeTouched : EdaTestBehaviour
+class TestIsCubeTouched : SceneTestCaseBase
 {
     void OnCollisionEnter(Collision _)
     {

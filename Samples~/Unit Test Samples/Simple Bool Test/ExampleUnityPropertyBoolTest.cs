@@ -6,7 +6,7 @@ using Edanoue.SceneTest;
 /// <summary>
 /// Unity の Inspector のチェックボックスにより可否が決まるテストクラス
 /// </summary>
-class ExampleUnityPropertyBoolTest : EdaTestBehaviour
+class ExampleUnityPropertyBoolTest : SceneTestCaseBase
 {
     public bool テストに成功するかどうか;
 
