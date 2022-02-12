@@ -120,7 +120,7 @@ namespace Edanoue.SceneTest
             if (runner == null)
             {
                 createdRunnerGo = new GameObject("__runner__");
-                runner = createdRunnerGo.AddComponent<SceneTest.TestRunner>();
+                runner = createdRunnerGo.AddComponent<SceneTest.SceneTestRunner>();
                 Debug.Log("Created new TestRunner");
             }
 

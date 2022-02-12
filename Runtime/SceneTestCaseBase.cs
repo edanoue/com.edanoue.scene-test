@@ -5,14 +5,12 @@ using UnityEngine;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-using Edanoue.SceneTest;
-
 namespace Edanoue.SceneTest
 {
     /// <summary>
     /// テストケース として振る舞う拡張 MonoBehaviour クラス
     /// </summary>
-    public abstract class EdaTestBehaviour : MonoBehaviour, ITestCase
+    public abstract class SceneTestCaseBase : MonoBehaviour, ITestCase
     {
         #region IEdaTestCase
 

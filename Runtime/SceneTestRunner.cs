@@ -12,7 +12,7 @@ namespace Edanoue.SceneTest
     /// <summary>
     ///
     /// </summary>
-    internal class TestRunner : MonoBehaviour, ITestRunner
+    internal class SceneTestRunner : MonoBehaviour, ITestRunner
     {
         #region ITestRunner
 
