@@ -95,7 +95,7 @@ namespace SceneLoadSuiteBase関連
 
             // 現在指定しているシーンは空のシーンのため なにもテストが実行されない
             // このばあい, Log に Warning がでていることを確認する
-            LogAssert.Expect(LogType.Warning, $"Not founded {nameof(ITestCase)} implemented components. skipped testing.");
+            LogAssert.Expect(LogType.Warning, $"Not founded {nameof(ISceneTestCase)} implemented components. skipped testing.");
             yield return RunTestAsync(isAutoLoadUnload: false);
 
             // アンロードしておく

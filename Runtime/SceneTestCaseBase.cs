@@ -18,7 +18,7 @@ namespace Edanoue.SceneTest
         void ISceneTestCase.OnRun() => this.OnRun();
         void ISceneTestCase.OnCancel() => this.OnCancel();
         void ISceneTestCase.OnTimeout() => this.OnTimeout();
-        ITestResult ISceneTestCase.Report => this._testReport;
+        ITestResult ISceneTestCase.Report => this._testResult;
         CaseOptions ISceneTestCase.Options => this._localOptions;
 
         #endregion
@@ -66,9 +66,15 @@ namespace Edanoue.SceneTest
         #region 内部処理用
 
         bool _isRunning;
-        SceneTestCaseResult? _testReport;
-        CaseOptions _localOptions;
         SceneTestCase? _testcase;
+        SceneTestCaseResult? _testResult;
+        CaseOptions _localOptions;
+
+        private void _makeTestResult()
+        {
+            _testcase = new(this.TestName);
+            _testResult = (SceneTestCaseResult)_testcase.MakeTestResult();
+        }
 
         /// <summary>
         /// Runner により呼ばれるテスト開始のコールバック
@@ -77,22 +83,21 @@ namespace Edanoue.SceneTest
         {
             // すでに テストレポートが生成されてたら無視する
             // Runner からの実行前に Awake などで呼ばれているパターン
-            if (_testReport is not null)
+            if (_testResult is not null)
             {
                 return;
             }
 
             if (!_isRunning)
             {
-                _testcase = new("まああ");
-                _testReport = new SceneTestCaseResult(_testcase);
+                _makeTestResult();
 
                 // 実行時点で Inspector に設定されているものからオプションを作成する
                 _localOptions = new(
                     localTimeoutSeconds: m_timeoutSeconds
                 );
 
-                Debug.Log($"Run {_testReport!.FullName}", this);
+                Debug.Log($"Run {_testResult!.FullName}", this);
                 _isRunning = true;
             }
         }
@@ -104,7 +109,7 @@ namespace Edanoue.SceneTest
         {
             if (_isRunning)
             {
-                _testReport!.SetResult(ResultState.Cancelled, "Manually canceled");
+                _testResult!.SetResult(ResultState.Cancelled, "Manually canceled");
                 _isRunning = false;
             }
         }
@@ -119,11 +124,10 @@ namespace Edanoue.SceneTest
             // Awake などで実行されたとき
             if (_testcase is null)
             {
-                _testcase = new("まああ");
-                _testReport = new SceneTestCaseResult(_testcase);
+                _makeTestResult();
             }
             // 結果を代入する
-            _testReport.SetResult(ResultState.Success, message);
+            _testResult.SetResult(ResultState.Success, message);
             _isRunning = false;
         }
 
@@ -137,11 +141,10 @@ namespace Edanoue.SceneTest
             // Awake などで実行されたとき
             if (_testcase is null)
             {
-                _testcase = new("まああ");
-                _testReport = new SceneTestCaseResult(_testcase);
+                _makeTestResult();
             }
             // 結果を代入する
-            _testReport.SetResult(ResultState.Failure, message);
+            _testResult.SetResult(ResultState.Failure, message);
             _isRunning = false;
         }
 

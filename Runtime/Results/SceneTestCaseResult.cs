@@ -17,7 +17,7 @@ namespace Edanoue.SceneTest
         /// Construct a TestCaseResult based on a TestMethod
         /// </summary>
         /// <param name="test">A TestMethod to which the result applies.</param>
-        public SceneTestCaseResult(ITest test) : base(test) { }
+        public SceneTestCaseResult(SceneTestCase test) : base(test) { }
 
         #region Overrides
 
