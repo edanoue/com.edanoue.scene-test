@@ -10,16 +10,16 @@ namespace Edanoue.SceneTest
     /// <summary>
     /// テストケース として振る舞う拡張 MonoBehaviour クラス
     /// </summary>
-    public abstract class SceneTestCaseBase : MonoBehaviour, ITestCase
+    public abstract class SceneTestCaseBase : MonoBehaviour, ISceneTestCase
     {
         #region IEdaTestCase
 
-        bool ITestCase.IsRunning => this._isRunning;
-        void ITestCase.OnRun() => this.OnRun();
-        void ITestCase.OnCancel() => this.OnCancel();
-        void ITestCase.OnTimeout() => this.OnTimeout();
-        ITestResult ITestCase.Report => this._testReport;
-        CaseOptions ITestCase.Options => this._localOptions;
+        bool ISceneTestCase.IsRunning => this._isRunning;
+        void ISceneTestCase.OnRun() => this.OnRun();
+        void ISceneTestCase.OnCancel() => this.OnCancel();
+        void ISceneTestCase.OnTimeout() => this.OnTimeout();
+        ITestResult ISceneTestCase.Report => this._testReport;
+        CaseOptions ISceneTestCase.Options => this._localOptions;
 
         #endregion
 

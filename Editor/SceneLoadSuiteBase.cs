@@ -106,11 +106,11 @@ namespace Edanoue.SceneTest
 
             // シーン内にあるテストランナーを検索して実行する
             // 最初に見つかったもの
-            ITestRunner? runner = null;
+            ISceneTestRunner? runner = null;
             GameObject? createdRunnerGo = null;
 
             // ITestRunner 実装コンポーネントをすべて検索する
-            foreach (var r in GameObject.FindObjectsOfType<MonoBehaviour>().OfType<ITestRunner>())
+            foreach (var r in GameObject.FindObjectsOfType<MonoBehaviour>().OfType<ISceneTestRunner>())
             {
                 runner = r;
                 break;

@@ -9,7 +9,7 @@ namespace Edanoue.SceneTest
     /// <summary>
     /// TestRunner から操作されるのためのインタフェース
     /// </summary>
-    public interface ITestCase
+    public interface ISceneTestCase
     {
         /// <summary>
         /// テストがまだ実行中かどうか

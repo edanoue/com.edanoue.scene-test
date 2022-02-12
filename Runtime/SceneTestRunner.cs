@@ -12,13 +12,13 @@ namespace Edanoue.SceneTest
     /// <summary>
     ///
     /// </summary>
-    internal class SceneTestRunner : MonoBehaviour, ITestRunner
+    internal class SceneTestRunner : MonoBehaviour, ISceneTestRunner
     {
         #region ITestRunner
 
-        IEnumerator ITestRunner.Run(RunnerOptions? options) => this.Run(options);
-        void ITestRunner.Cancel() => this.Cancel();
-        List<ITestResult> ITestRunner.LatestReports => _lastRunningTestReports;
+        IEnumerator ISceneTestRunner.Run(RunnerOptions? options) => this.Run(options);
+        void ISceneTestRunner.Cancel() => this.Cancel();
+        List<ITestResult> ISceneTestRunner.LatestReports => _lastRunningTestReports;
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace Edanoue.SceneTest
         /// 開始時にキャッシュされるテストの一覧
         /// </summary>
         /// <returns></returns>
-        readonly List<ITestCase> _cachedTestCases = new();
+        readonly List<ISceneTestCase> _cachedTestCases = new();
         readonly List<ITestResult> _lastRunningTestReports = new();
 
         bool _bReceivedCacheRequest;
@@ -47,7 +47,7 @@ namespace Edanoue.SceneTest
             // 何もキャッシュにないので実行しない
             if (_cachedTestCases.Count == 0)
             {
-                Debug.LogWarning($"Not founded {nameof(ITestCase)} implemented components. skipped testing.", this);
+                Debug.LogWarning($"Not founded {nameof(ISceneTestCase)} implemented components. skipped testing.", this);
                 yield break;
             }
 
@@ -79,7 +79,7 @@ namespace Edanoue.SceneTest
             var _globalTimeoutTimer = new WaitForSecondsRealtime(_timeoutSeconds);
 
             // ローカルのタイムアウト確認用のタイマーのマップを作成しておく
-            Dictionary<ITestCase, IEnumerator> _localTimeoutTimerMap = new();
+            Dictionary<ISceneTestCase, IEnumerator> _localTimeoutTimerMap = new();
 
             while (_globalTimeoutTimer.MoveNext())
             {
@@ -191,7 +191,7 @@ namespace Edanoue.SceneTest
             _cachedTestCases.Clear();
 
             // ロードしているすべてのシーン内から ITestBehaviour 実装コンポーネントを検索する
-            var ss = FindObjectsOfType<MonoBehaviour>().OfType<ITestCase>();
+            var ss = FindObjectsOfType<MonoBehaviour>().OfType<ISceneTestCase>();
             foreach (var s in ss)
             {
                 // キャッシュに追加する

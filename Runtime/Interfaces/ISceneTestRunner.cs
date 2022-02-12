@@ -6,7 +6,7 @@ using NUnit.Framework.Interfaces;
 
 namespace Edanoue.SceneTest
 {
-    public interface ITestRunner
+    public interface ISceneTestRunner
     {
         /// <summary>
         /// シーン内にあるすべてのテストケースを開始して待機する
