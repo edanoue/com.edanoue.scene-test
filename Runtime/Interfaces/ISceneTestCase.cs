@@ -4,7 +4,7 @@
 
 using NUnit.Framework.Interfaces;
 
-namespace Edanoue.SceneTest
+namespace Edanoue.SceneTest.Interfaces
 {
     /// <summary>
     /// TestRunner から操作されるのためのインタフェース
@@ -23,11 +23,6 @@ namespace Edanoue.SceneTest
         void OnRun();
 
         /// <summary>
-        /// キャンセル時に呼ばれるコールバック
-        /// </summary>
-        void OnCancel();
-
-        /// <summary>
         /// タイムアウト時に呼ばれるコールバック
         /// </summary>
         void OnTimeout();
@@ -35,7 +30,7 @@ namespace Edanoue.SceneTest
         /// <summary>
         /// テストレポートを取得する
         /// </summary>
-        ITestResult Report { get; }
+        ITestResult Result { get; }
 
         /// <summary>
         /// TestCase Local の Option を取得
