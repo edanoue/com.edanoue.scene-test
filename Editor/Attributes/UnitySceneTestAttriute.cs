@@ -86,7 +86,8 @@ namespace Edanoue.SceneTest
             // Fixuture で実行するメソッド を差し替える
             var method = new MethodWrapper(typeof(CommonSceneTestCase), "RunTest");
 
-            // これやると Unity void 以外の戻り方に が怒らなくなる
+            // Hack for Unity Test Runner
+            // この処理をやることで PlayMode Test が動作するようになる
             TestCaseParameters parms = new TestCaseParameters(args: new object[1] { abspath })
             {
                 ExpectedResult = new object(),
@@ -97,10 +98,12 @@ namespace Edanoue.SceneTest
             {
                 test.parms.HasExpectedResult = false;
             }
-            // Hack ここまで
+            // End Hack
 
             // 名前がうるさいのでシンプルに
             test.Name = "Run Test";
+
+            // Fixture にこのテストを追加する
             fixture.Add(test);
 
             yield return fixture;
