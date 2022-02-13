@@ -1,67 +1,45 @@
-// Copyright Edanoue, Inc. MIT License - see LICENSE.md
-
 #nullable enable
 
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework.Interfaces;
-using NUnit.Framework.Internal;
 using UnityEngine;
+using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+
+using Edanoue.SceneTest.Interfaces;
 
 namespace Edanoue.SceneTest
 {
-    /// <summary>
-    ///
-    /// </summary>
-    internal class SceneTestRunner : MonoBehaviour, ISceneTestRunner
+    internal class SceneTestRunner : ISceneTestRunner
     {
-        #region ITestRunner
+        #region Constructor
 
-        IEnumerator ISceneTestRunner.Run(RunnerOptions? options) => this.Run(options);
-        void ISceneTestRunner.Cancel() => this.Cancel();
-        List<ITestResult> ISceneTestRunner.LatestReports => _lastRunningTestReports;
+        internal SceneTestRunner(ISceneTestCaseCollecter sceneTestCaseCollecter)
+        {
+            _sceneTestCaseCollecter = sceneTestCaseCollecter;
+        }
 
         #endregion
 
-        /// <summary>
-        /// 開始時にキャッシュされるテストの一覧
-        /// </summary>
-        /// <returns></returns>
-        readonly List<ISceneTestCase> _cachedTestCases = new();
-        readonly List<ITestResult> _lastRunningTestReports = new();
-
-        bool _bReceivedCacheRequest;
-        bool _isRunning;
-
-        private IEnumerator Run(RunnerOptions? inOptions)
+        IEnumerator ISceneTestRunner.RunAll(RunnerOptions? inOptions = null)
         {
-            // すでに Runner が実行中なので抜ける
             if (_isRunning)
             {
-                Debug.LogWarning("Already Running", this);
-                yield break;
-            }
-
-            // ロード中のシーン全てから TestCase を収集する
-            FetchAllITestBehaviour();
-
-            // 何もキャッシュにないので実行しない
-            if (_cachedTestCases.Count == 0)
-            {
-                Debug.LogWarning($"Not founded {nameof(ISceneTestCase)} implemented components. skipped testing.", this);
+                Debug.LogWarning("Already Running");
                 yield break;
             }
 
             // テストの開始
             _isRunning = true;
-            Debug.Log("Founding tests in Scene...", this);
-            foreach (var testcase in _cachedTestCases)
+
+            // 見つかっている全てのテストを実行する
+            foreach (var testcase in _sceneTestCaseCollecter.TestCases)
             {
                 testcase.OnRun();
             }
 
-            Debug.Log($"Start to running test with {this.GetType().Name}", this);
+            Debug.Log($"Start to running test with {this.GetType().Name}");
 
             // オプションが指定されていないならデフォルトのものを用意する
             // 南: なんとなく Global のタイムアウトは 10秒 としています
@@ -86,10 +64,10 @@ namespace Edanoue.SceneTest
             while (_globalTimeoutTimer.MoveNext())
             {
                 // キャンセルの命令が来た場合はループを抜ける
-                if (_bReceivedCacheRequest)
+                if (_isReceivedCacheRequest)
                 {
                     // 現時点で実行中のテストにキャンセル命令をだす
-                    foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
+                    foreach (var test in _sceneTestCaseCollecter.TestCases.Where(x => x.IsRunning))
                     {
                         test.OnCancel();
                     }
@@ -99,7 +77,7 @@ namespace Edanoue.SceneTest
                 }
 
                 // 実行中のテストケース の タイムアウトを確認する
-                foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
+                foreach (var test in _sceneTestCaseCollecter.TestCases.Where(x => x.IsRunning))
                 {
                     // まだタイマーが作成されていなかったら作成する
                     if (!_localTimeoutTimerMap.ContainsKey(test))
@@ -122,10 +100,10 @@ namespace Edanoue.SceneTest
                 }
 
                 // まだ完了していないテストがあるかどうかを確認するフラグ
-                bool isAnyTestRunning = _cachedTestCases.Count(x => x.IsRunning) > 0;
+                bool isAnyTestRunning = _sceneTestCaseCollecter.TestCases.Count(x => x.IsRunning) > 0;
                 if (isAnyTestRunning)
                 {
-                    // 1フレーム待機する
+                    // 1フレーム待機して
                     yield return null;
                     // ループを続行する
                     continue;
@@ -139,16 +117,17 @@ namespace Edanoue.SceneTest
             }
 
             // まだ終了していないテストはタイムアウトとする
-            foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
+            foreach (var test in _sceneTestCaseCollecter.TestCases.Where(x => x.IsRunning))
             {
                 test.OnTimeout();
             }
 
-            Debug.Log("Completed to test!", this);
+            Debug.Log("Completed to test!");
 
             // Test Report を収集しておく
+            /*
             _lastRunningTestReports.Clear();
-            foreach (var test in _cachedTestCases)
+            foreach (var test in _sceneTestCaseCollecter.TestCases)
             {
                 var report = test.Report;
 
@@ -175,33 +154,43 @@ namespace Edanoue.SceneTest
 
                 _lastRunningTestReports.Add(report);
             }
+            */
 
             // テスト実行の終了
             _isRunning = false;
-            // GC のためにキャッシュを空にしておく
-            _cachedTestCases.Clear();
+        }
+
+        IEnumerator ISceneTestRunner.Run(string[] ids, RunnerOptions? options = null)
+        {
+            yield return null;
         }
 
         /// <summary>
-        /// ユーザーからのキャンセル命令が来た時
+        /// テストケースの実行をキャンセルする
         /// </summary>
-        public void Cancel() => _bReceivedCacheRequest = true;
-
-        void FetchAllITestBehaviour()
+        void ISceneTestRunner.Cancel()
         {
-            // 一度キャッシュを空にする
-            _cachedTestCases.Clear();
+            _isReceivedCacheRequest = true;
+        }
 
-            // ロードしているすべてのシーン内から ITestBehaviour 実装コンポーネントを検索する
-            var ss = FindObjectsOfType<MonoBehaviour>().OfType<ISceneTestCase>();
-            foreach (var s in ss)
+        /// <summary>
+        /// 直近で実行したテストの実行結果のレポートのリストを取得
+        /// </summary>
+        /// <value></value>
+        IEnumerable<ITestResult> ISceneTestRunner.LatestReports
+        {
+            get
             {
-                // キャッシュに追加する
-                if (!_cachedTestCases.Contains(s))
-                {
-                    _cachedTestCases.Add(s);
-                }
+                return new ITestResult[0];
             }
         }
+
+        #region Helpers
+
+        readonly ISceneTestCaseCollecter _sceneTestCaseCollecter;
+        bool _isRunning;
+        bool _isReceivedCacheRequest;
+
+        #endregion
     }
 }

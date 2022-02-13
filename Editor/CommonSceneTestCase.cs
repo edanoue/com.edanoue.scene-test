@@ -1,35 +1,48 @@
 #nullable enable
 
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
+using Edanoue.SceneTest.Interfaces;
 
 namespace Edanoue.SceneTest
 {
-    public static class Foo
+    public static class CommonSceneTestCase
     {
-        public static IEnumerator RunTest(string ぬう)
+        private static class Log
         {
-            yield return LoadTestSceneAsync(ぬう);
+            public static void Info(string msg)
+            {
+                UnityEngine.Debug.Log($"[{nameof(SceneTest)}] {msg}");
+            }
+            public static void Warning(string msg)
+            {
+                UnityEngine.Debug.LogWarning($"[{nameof(SceneTest)}] {msg}");
+            }
+        }
 
-            // シーン内にあるテストランナーを検索して実行する
-            // 最初に見つかったもの
-            ISceneTestRunner? runner = null;
-            GameObject? createdRunnerGo = null;
+        public static IEnumerator RunTest(string sceneAbsPath)
+        {
+            // 指定されたシーンを読み込む
+            yield return LoadTestSceneAsync(sceneAbsPath);
 
-            // もし見つからなかったら新規で作成する
-            createdRunnerGo = new GameObject("__runner__");
-            runner = createdRunnerGo.AddComponent<SceneTest.SceneTestRunner>();
-            Debug.Log("Created new TestRunner");
+            // ロードされている全てのシーン内から TestCase を収集する
+            ISceneTestCaseCollecter caseCollecter = new SceneTestCaseCollecter();
+            if (!caseCollecter.Collect())
+            {
+                Log.Warning($"Not founded any {nameof(ISceneTestCase)} implemented components. skipped testing.");
+                yield break;
+            }
 
-            // 現在読込中のシーンから ISceneTestCase 実装コンポーネントをすべて検索する
+            // 見つかったテストから Nunit 用の TestMethod を生成して Json で Library 以下にシリアライズする
+            /*
             foreach (var r in GameObject.FindObjectsOfType<MonoBehaviour>().OfType<ISceneTestCase>())
             {
                 // 独自の TestMethod を生成する
@@ -41,8 +54,13 @@ namespace Edanoue.SceneTest
                 testMethod.Name = "mock";
                 tests.Add(testMethod);
             }
+            */
+
+            // テストランナーを生成する
+            ISceneTestRunner runner = new SceneTestRunner(caseCollecter);
 
             // Suite の方に記述されてる PropertieBag にアクセスする
+            /*
             var testSuiteProperties = test.Parent.Properties;
             // Timeout を取得する
             // Default は 10 秒としておく
@@ -58,9 +76,10 @@ namespace Edanoue.SceneTest
                 // こちら側は 0.1 秒だけ短くしておく
                 timeoutSec = Mathf.Max(0.01f, timeoutSec - 0.1f);
             }
+            */
 
             // テストを実行する
-            yield return runner.Run(new RunnerOptions(timeoutSec));
+            yield return runner.RunAll(new RunnerOptions(10));
 
             // テスト結果を取得しておく
             var reports = runner.LatestReports;
@@ -84,18 +103,10 @@ namespace Edanoue.SceneTest
                 reportsStr += $"duration: {report.Duration}\n";
                 reportsStr += $"--------------------------\n";
             }
-            Debug.Log(reportsStr);
-
-            // runner を自動生成しているならば手動で削除する
-            if (createdRunnerGo != null)
-            {
-                GameObject.DestroyImmediate(createdRunnerGo);
-                Debug.Log("Destroyed TestRunner");
-            }
+            Log.Info(reportsStr);
 
             // 指定されたシーンのアンロードを行う
-            yield return UnloadTestSceneAsync(ぬう);
-
+            yield return UnloadTestSceneAsync(sceneAbsPath);
         }
 
         private static bool IsLoadedTestScene(string scenePath)
@@ -112,7 +123,7 @@ namespace Edanoue.SceneTest
             // まだシーンが読み込まれていない場合は処理をスキップする
             if (!IsLoadedTestScene(scenePath))
             {
-                Debug.LogWarning($"Already unloaded scene: {scenePath}. skip unload");
+                Log.Warning($"Already unloaded scene: {scenePath}. skip unload");
                 yield break;
             }
 
@@ -121,7 +132,7 @@ namespace Edanoue.SceneTest
 
             if (!IsLoadedTestScene(scenePath))
             {
-                Debug.Log($"Unloaded test scene: {scenePath}");
+                Log.Info($"Unloaded test scene: {scenePath}");
             }
         }
 
@@ -130,7 +141,7 @@ namespace Edanoue.SceneTest
             // すでにシーンがロード済みの場合は処理をスキップする
             if (IsLoadedTestScene(scenePath))
             {
-                Debug.LogWarning($"Already loaded scene: {scenePath}. skip load");
+                Log.Warning($"Already loaded scene: {scenePath}. skip load");
                 yield break;
             }
 
@@ -143,7 +154,7 @@ namespace Edanoue.SceneTest
 
             if (IsLoadedTestScene(scenePath))
             {
-                Debug.Log($"Loaded test scene: {scenePath}");
+                Log.Info($"Loaded test scene: {scenePath}");
             }
         }
     }

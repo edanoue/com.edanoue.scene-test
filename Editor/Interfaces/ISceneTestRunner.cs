@@ -4,15 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework.Interfaces;
 
-namespace Edanoue.SceneTest
+namespace Edanoue.SceneTest.Interfaces
 {
     public interface ISceneTestRunner
     {
-        /// <summary>
-        /// シーン内にあるすべてのテストケースを開始して待機する
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator Run(RunnerOptions? options = null);
+        IEnumerator RunAll(RunnerOptions? options = null);
+
+        IEnumerator Run(string[] ids, RunnerOptions? options = null);
 
         /// <summary>
         /// テストケースの実行をキャンセルする
@@ -23,6 +21,6 @@ namespace Edanoue.SceneTest
         /// 直近で実行したテストの実行結果のレポートのリストを取得
         /// </summary>
         /// <value></value>
-        List<ITestResult> LatestReports { get; }
+        IEnumerable<ITestResult> LatestReports { get; }
     }
 }

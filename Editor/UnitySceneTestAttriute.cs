@@ -19,9 +19,7 @@ using UnityEditor;
 namespace Edanoue.SceneTest
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class UnitySceneTestAttribute :
-        NUnitAttribute,
-        IFixtureBuilder
+    public class UnitySceneTestAttribute : NUnitAttribute, IFixtureBuilder
     {
 
         #region Constructors
@@ -33,17 +31,20 @@ namespace Edanoue.SceneTest
 
         #endregion
 
-        private readonly NUnitTestFixtureBuilder _fixtureBuilder = new();
-        private readonly NUnitTestCaseBuilder _testBuilder = new();
 
-        // Unity に認識される
+        #region NUnit.Framework.Interfaces.IFixtureBuilder impls
+
         IEnumerable<TestSuite> IFixtureBuilder.BuildFrom(ITypeInfo typeInfo)
         {
-            var suite = _fixtureBuilder.BuildFrom(typeInfo);
+            var fixture = _fixtureBuilder.BuildFrom(typeInfo);
 
-            // 引数に指定されたパスを確認する
+            // Attribute の 引数に指定されたパスを確認する
             string abspath;
+
+            // AssetDatabase を利用して GUID への変換を行う
             var guid = AssetDatabase.AssetPathToGUID(_scenePath);
+
+            // GUIDが 空文字の場合は 指定されたパスの解決に失敗している
             if (string.IsNullOrEmpty(guid))
             {
                 // GUID が見つからなかったので検索する
@@ -54,32 +55,41 @@ namespace Edanoue.SceneTest
                 if (result == null || result.Length == 0)
                 {
                     // 指定されたシーンが見つからなかったのでエラー
-                    suite.RunState = RunState.NotRunnable;
-                    throw new ArgumentException($"Not founded scene: {_scenePath}");
+                    var errorMsg = $"Not founded scene: {_scenePath}";
+                    {
+                        fixture.RunState = RunState.NotRunnable;
+                        fixture.Properties.Add(PropertyNames.SkipReason, errorMsg);
+                    }
+                    throw new ArgumentException(errorMsg, "scenePath");
                 }
-                else if (result.Length > 1)
+                if (result.Length > 1)
                 {
                     // 複数個シーンが見つかったのでエラー
-                    suite.RunState = RunState.NotRunnable;
-                    throw new ArgumentException($"Founded multiple scenes: {_scenePath}. Please use abs path");
+                    var errorMsg = $"There are multiple scenes with the same name: {_scenePath}. Please use absolute paths (e.g. Assets/your/scene.unity)";
+                    {
+                        fixture.RunState = RunState.NotRunnable;
+                        fixture.Properties.Add(PropertyNames.SkipReason, errorMsg);
+                    }
+                    throw new ArgumentException(errorMsg, "scenePath");
                 }
-                else
-                {
-                    suite.RunState = RunState.Runnable;
-                    abspath = AssetDatabase.GUIDToAssetPath(result[0]);
-                }
+
+                fixture.RunState = RunState.Runnable;
+                abspath = AssetDatabase.GUIDToAssetPath(result[0]);
             }
+
+            // GUID が取得できたばあいは そのまま引数のものをシーンパスとする
             else
             {
                 // Asset/path/scene.unity 
-                suite.RunState = RunState.Runnable;
+                fixture.RunState = RunState.Runnable;
                 abspath = _scenePath;
             }
 
-            suite.Name = $"Scene Test ({_sceneName}.unity)";
+            // Fixture の 名前を上書きする
+            fixture.Name = $"Scene Test ({_sceneName}.unity)";
 
-            // method を差し替える
-            var method = new MethodWrapper(typeof(Foo), "RunTest");
+            // Fixuture で実行するメソッド を差し替える
+            var method = new MethodWrapper(typeof(CommonSceneTestCase), "RunTest");
 
             // これやると Unity void 以外の戻り方に が怒らなくなる
             TestCaseParameters parms = new TestCaseParameters(args: new object[1] { abspath })
@@ -87,7 +97,7 @@ namespace Edanoue.SceneTest
                 ExpectedResult = new object(),
                 HasExpectedResult = true
             };
-            var test = _testBuilder.BuildTestMethod(method, suite, parms);
+            var test = _testBuilder.BuildTestMethod(method, fixture, parms);
             if (test.parms != null)
             {
                 test.parms.HasExpectedResult = false;
@@ -96,13 +106,22 @@ namespace Edanoue.SceneTest
 
             // 名前がうるさいのでシンプルに
             test.Name = "Run Test";
-            suite.Add(test);
+            fixture.Add(test);
 
-            yield return suite;
+            yield return fixture;
         }
+
+        #endregion
+
+        #region Helpers
+
+        private readonly NUnitTestFixtureBuilder _fixtureBuilder = new();
+        private readonly NUnitTestCaseBuilder _testBuilder = new();
 
         private readonly string _scenePath;
         private string _sceneName => Path.GetFileNameWithoutExtension(_scenePath);
+
+        #endregion
 
     }
 }
