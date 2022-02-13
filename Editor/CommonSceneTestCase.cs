@@ -1,15 +1,10 @@
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
+
 #nullable enable
 
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
 using Edanoue.SceneTest.Interfaces;
 
 namespace Edanoue.SceneTest
@@ -81,8 +76,8 @@ namespace Edanoue.SceneTest
             // テストを実行する
             yield return runner.RunAll(new RunnerOptions(10));
 
-            // テスト結果を取得しておく
-            var reports = runner.LatestReports;
+            // 指定されたシーンのアンロードを行う
+            yield return UnloadTestSceneAsync(sceneAbsPath);
 
             // テストレポートの表示 を行う
             string reportsStr = "";
@@ -90,8 +85,11 @@ namespace Edanoue.SceneTest
             reportsStr += "        Test Report       \n";
             reportsStr += "==========================\n";
 
-            foreach (var report in reports)
+            // テスト結果を取得する
+            foreach (var test in caseCollecter.TestCases)
             {
+                var report = test.Result;
+
                 reportsStr += $"{report.Name}: {report.ResultState}\n";
                 reportsStr += $"msg: {report.Message}\n";
                 /*
@@ -102,11 +100,34 @@ namespace Edanoue.SceneTest
                 */
                 reportsStr += $"duration: {report.Duration}\n";
                 reportsStr += $"--------------------------\n";
+
+                /*
+
+                // Custon Info に ゲームオブジェクト情報も入れておく
+                if (test is MonoBehaviour mb)
+                {
+                    // report.CustomInfos.Add("GameObject", mb.gameObject.name);
+                }
+
+                // Custom Info に タイムアウト情報も入れておく
+                {
+                    var globalTimeoutSec = _timeoutSeconds;
+                    var localTimeoutSec = Mathf.Max(test.Options.LocalTimeoutSeconds, 0.001f);
+
+                    if (globalTimeoutSec > localTimeoutSec)
+                    {
+                        // report.CustomInfos.Add("timeoutSec", $"{localTimeoutSec} (local)");
+                    }
+                    else
+                    {
+                        // report.CustomInfos.Add("timeoutSec", $"{globalTimeoutSec} (global)");
+                    }
+                }
+                */
             }
+
             Log.Info(reportsStr);
 
-            // 指定されたシーンのアンロードを行う
-            yield return UnloadTestSceneAsync(sceneAbsPath);
         }
 
         private static bool IsLoadedTestScene(string scenePath)

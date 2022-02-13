@@ -1,12 +1,11 @@
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
+
 #nullable enable
 
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
-
 using Edanoue.SceneTest.Interfaces;
 
 namespace Edanoue.SceneTest
@@ -24,6 +23,7 @@ namespace Edanoue.SceneTest
 
         IEnumerator ISceneTestRunner.RunAll(RunnerOptions? inOptions = null)
         {
+            // 現在このRunner が実行中なら処理をスキップする
             if (_isRunning)
             {
                 Debug.LogWarning("Already Running");
@@ -38,8 +38,6 @@ namespace Edanoue.SceneTest
             {
                 testcase.OnRun();
             }
-
-            Debug.Log($"Start to running test with {this.GetType().Name}");
 
             // オプションが指定されていないならデフォルトのものを用意する
             // 南: なんとなく Global のタイムアウトは 10秒 としています
@@ -63,19 +61,6 @@ namespace Edanoue.SceneTest
 
             while (_globalTimeoutTimer.MoveNext())
             {
-                // キャンセルの命令が来た場合はループを抜ける
-                if (_isReceivedCacheRequest)
-                {
-                    // 現時点で実行中のテストにキャンセル命令をだす
-                    foreach (var test in _sceneTestCaseCollecter.TestCases.Where(x => x.IsRunning))
-                    {
-                        test.OnCancel();
-                    }
-
-                    // ループを抜ける
-                    break;
-                }
-
                 // 実行中のテストケース の タイムアウトを確認する
                 foreach (var test in _sceneTestCaseCollecter.TestCases.Where(x => x.IsRunning))
                 {
@@ -122,40 +107,6 @@ namespace Edanoue.SceneTest
                 test.OnTimeout();
             }
 
-            Debug.Log("Completed to test!");
-
-            // Test Report を収集しておく
-            /*
-            _lastRunningTestReports.Clear();
-            foreach (var test in _sceneTestCaseCollecter.TestCases)
-            {
-                var report = test.Report;
-
-                // Custon Info に ゲームオブジェクト情報も入れておく
-                if (test is MonoBehaviour mb)
-                {
-                    // report.CustomInfos.Add("GameObject", mb.gameObject.name);
-                }
-
-                // Custom Info に タイムアウト情報も入れておく
-                {
-                    var globalTimeoutSec = _timeoutSeconds;
-                    var localTimeoutSec = Mathf.Max(test.Options.LocalTimeoutSeconds, 0.001f);
-
-                    if (globalTimeoutSec > localTimeoutSec)
-                    {
-                        // report.CustomInfos.Add("timeoutSec", $"{localTimeoutSec} (local)");
-                    }
-                    else
-                    {
-                        // report.CustomInfos.Add("timeoutSec", $"{globalTimeoutSec} (global)");
-                    }
-                }
-
-                _lastRunningTestReports.Add(report);
-            }
-            */
-
             // テスト実行の終了
             _isRunning = false;
         }
@@ -165,31 +116,10 @@ namespace Edanoue.SceneTest
             yield return null;
         }
 
-        /// <summary>
-        /// テストケースの実行をキャンセルする
-        /// </summary>
-        void ISceneTestRunner.Cancel()
-        {
-            _isReceivedCacheRequest = true;
-        }
-
-        /// <summary>
-        /// 直近で実行したテストの実行結果のレポートのリストを取得
-        /// </summary>
-        /// <value></value>
-        IEnumerable<ITestResult> ISceneTestRunner.LatestReports
-        {
-            get
-            {
-                return new ITestResult[0];
-            }
-        }
-
         #region Helpers
 
         readonly ISceneTestCaseCollecter _sceneTestCaseCollecter;
         bool _isRunning;
-        bool _isReceivedCacheRequest;
 
         #endregion
     }

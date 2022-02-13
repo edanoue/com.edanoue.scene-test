@@ -1,11 +1,10 @@
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
+
 #nullable enable
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
 
 using Edanoue.SceneTest.Interfaces;
 
