@@ -484,8 +484,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d62a0c02608226d4aa451560901c2a36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_customTestName: 
-  m_timeoutSeconds: 3
+  m_testCaseOptions:
+    CustomCaseName: "\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u306A\u3044"
+    LocalTimeoutSeconds: 2
 --- !u!1 &1949865210
 GameObject:
   m_ObjectHideFlags: 0
@@ -630,8 +631,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf0bf3e84e3e16c44a71271b56f45052, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_customTestName: "\u771F\u3093\u4E2D\u306E\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u308B"
-  m_timeoutSeconds: 1
+  m_testCaseOptions:
+    CustomCaseName: "\u771F\u3093\u4E2D\u306E\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u308B"
+    LocalTimeoutSeconds: 10
 --- !u!65 &2062307604
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -690,8 +692,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf0bf3e84e3e16c44a71271b56f45052, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_customTestName: "\u53F3\u306E\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u308B"
-  m_timeoutSeconds: 1
+  m_testCaseOptions:
+    CustomCaseName: "\u53F3\u306E\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u308B"
+    LocalTimeoutSeconds: 10
 --- !u!65 &2074217081
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -778,5 +781,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf0bf3e84e3e16c44a71271b56f45052, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_customTestName: "\u5DE6\u306E\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u308B"
-  m_timeoutSeconds: 1
+  m_testCaseOptions:
+    CustomCaseName: "\u5DE6\u306E\u30AD\u30E5\u30FC\u30D6\u304C\u89E6\u308C\u308B"
+    LocalTimeoutSeconds: 10

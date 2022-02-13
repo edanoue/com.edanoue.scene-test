@@ -1,3 +1,5 @@
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
+
 #nullable enable
 #if UNITY_EDITOR
 
@@ -8,11 +10,8 @@ using Edanoue.SceneTest;
 /// シーン内にあるキューブが触れたら失敗するテスト
 /// Timeout したときにのみ成功扱いとする
 /// </summary>
-public class TestIsCubeNotTouched : SceneTestCaseBase
+public class TestIsCubeNotTouched : SceneTestCaseBehaviour
 {
-    // テスト名を C# 側で強制的に設定する
-    protected override string TestName => "キューブが触れたら失敗のテスト";
-
     // なにか触れたら失敗とする
     void OnCollisionEnter(Collision _)
     {

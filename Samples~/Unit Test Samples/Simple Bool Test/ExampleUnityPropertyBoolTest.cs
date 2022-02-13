@@ -1,3 +1,5 @@
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
+
 #nullable enable
 #if UNITY_EDITOR
 
@@ -6,7 +8,7 @@ using Edanoue.SceneTest;
 /// <summary>
 /// Unity の Inspector のチェックボックスにより可否が決まるテストクラス
 /// </summary>
-class ExampleUnityPropertyBoolTest : SceneTestCaseBase
+class ExampleUnityPropertyBoolTest : SceneTestCaseBehaviour
 {
     public bool テストに成功するかどうか;
 

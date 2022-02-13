@@ -1,8 +1,9 @@
+// Copyright Edanoue, Inc. MIT License - see LICENSE.md
+
 #nullable enable
 
 #if UNITY_EDITOR
 
-using System.Collections;
 using Edanoue.SceneTest;
 
 [UnitySceneTest("SceneTest_SimpleBoolTest.unity")]
