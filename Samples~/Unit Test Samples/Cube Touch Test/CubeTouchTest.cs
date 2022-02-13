@@ -1,19 +1,13 @@
 #nullable enable
 #if UNITY_EDITOR
 
-using System.Collections;
-using Edanoue.SceneTest;
 using NUnit.Framework;
+using Edanoue.SceneTest;
 
-class CubeTouchTest : SceneLoadSuiteBase
+[Timeout(1000)]
+[UnitySceneTest("SceneTest_CubeTouchTest.unity")]
+class CubeTouchTest
 {
-    [UnitySceneTest("Assets/com.edanoue.scenetest/Samples/Unit Test Samples/Cube Touch Test/SceneTest_CubeTouchTest.unity")]
-    [Timeout(1000)]
-    public IEnumerator RunSceneTest()
-    {
-        // シーン内テストを実行する
-        yield return RunTestAsync();
-    }
 }
 
 #endif
