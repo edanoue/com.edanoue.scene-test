@@ -1,6 +1,8 @@
-# com.edanoue.scenetest
+# Unity SceneTest
+
+- Scene based testing-toolset
 
 ## Installation
 
 - Enter below url at UPM git package installation.
-- `https://github.com/edanoue/com.edanoue.scenetest.git#<Version>`
+- `https://github.com/minami110/UnitySceneTest.git#<Version>`
