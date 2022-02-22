@@ -1,8 +1,8 @@
 {
-  "name": "com.minami110.scenetest",
-  "description": "Scene Test",
+  "name": "com.edanoue.scenetest",
+  "description": "Scene Testing toolset like UE4 BP Testing",
   "version": "1.0.0",
-  "displayName": "Scene Test",
+  "displayName": "Unity Scene Test",
   "unity": "2021.2",
   "dependencies": {
     "com.unity.test-framework": "1.1.30"
@@ -18,7 +18,7 @@
     "testing"
   ],
   "author": {
-    "name": "Minami Tomonobu",
+    "name": "Edanoue, Inc.",
     "email": "contact@edanoue.com",
     "url": "https://edanoue.com"
   }
