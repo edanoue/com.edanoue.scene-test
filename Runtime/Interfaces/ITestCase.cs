@@ -1,7 +1,7 @@
-#nullable enable
-using System.Collections;
+// Copyright Edanoue, Inc. All Rights Reserved.
 
-namespace Edanoue.TestAPI
+#nullable enable
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// TestRunner から操作されるのためのインタフェース
@@ -13,6 +13,17 @@ namespace Edanoue.TestAPI
         /// </summary>
         /// <value></value>
         bool IsRunning { get; }
+
+        /// <summary>
+        /// テストレポートを取得する
+        /// </summary>
+        ITestReport Report { get; }
+
+        /// <summary>
+        /// TestCase Local の Option を取得
+        /// </summary>
+        /// <value></value>
+        CaseOptions Options { get; }
 
         /// <summary>
         /// 開始時に呼ばれるコールバック
@@ -28,16 +39,5 @@ namespace Edanoue.TestAPI
         /// タイムアウト時に呼ばれるコールバック
         /// </summary>
         void OnTimeout();
-
-        /// <summary>
-        /// テストレポートを取得する
-        /// </summary>
-        ITestReport Report { get; }
-
-        /// <summary>
-        /// TestCase Local の Option を取得
-        /// </summary>
-        /// <value></value>
-        CaseOptions Options { get; }
     }
 }

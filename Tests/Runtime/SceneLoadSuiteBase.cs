@@ -1,14 +1,15 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 using System.Collections;
-using System.Collections.Generic;
+using Edanoue.SceneTest;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using Edanoue.TestAPI;
 
 namespace SceneLoadSuiteBase関連
 {
-    class シーンロード関連のテストケース : SceneLoadSuiteBase
+    internal class シーンロード関連のテストケース : SceneLoadSuiteBase
     {
         protected override string ScenePath => $"{ScriptDir()}/Scenes/__EmptyScene.unity";
 
@@ -49,7 +50,7 @@ namespace SceneLoadSuiteBase関連
         public IEnumerator LoadTestSceneAsyncで重複してシーンが読み込まれない()
         {
             // 現在のシーンのカウント数を取得しておく
-            int oldSceneCount = SceneManager.sceneCount;
+            var oldSceneCount = SceneManager.sceneCount;
 
             // シーンのロードを行う
             yield return LoadTestSceneAsync();
@@ -57,7 +58,7 @@ namespace SceneLoadSuiteBase関連
             yield return LoadTestSceneAsync();
 
             // シーンは一つしか読み込まれていない
-            int newSceneCount = SceneManager.sceneCount;
+            var newSceneCount = SceneManager.sceneCount;
             Assert.That(newSceneCount, Is.EqualTo(oldSceneCount + 1));
 
             // アンロードしておく
@@ -65,7 +66,7 @@ namespace SceneLoadSuiteBase関連
         }
     }
 
-    class 空のシーンが指定されたテストケース : SceneLoadSuiteBase
+    internal class 空のシーンが指定されたテストケース : SceneLoadSuiteBase
     {
         protected override string ScenePath => $"{ScriptDir()}/Scenes/__EmptyScene.unity";
 
@@ -95,7 +96,8 @@ namespace SceneLoadSuiteBase関連
 
             // 現在指定しているシーンは空のシーンのため なにもテストが実行されない
             // このばあい, Log に Warning がでていることを確認する
-            LogAssert.Expect(LogType.Warning, $"Not founded {nameof(ITestCase)} implemented components. skipped testing.");
+            LogAssert.Expect(LogType.Warning,
+                $"Not founded {nameof(ITestCase)} implemented components. skipped testing.");
             yield return RunTestAsync(isAutoLoadUnload: false);
 
             // アンロードしておく

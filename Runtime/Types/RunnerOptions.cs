@@ -1,6 +1,8 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     public readonly struct RunnerOptions
     {

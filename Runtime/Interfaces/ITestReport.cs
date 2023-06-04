@@ -1,13 +1,15 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
 using System.Collections.Generic;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     public interface ITestReport
     {
         string Name { get; }
-        Status Status { get; }
+        SceneTestStatus Status { get; }
         string Message { get; }
         Dictionary<string, string> CustomInfos { get; }
     }

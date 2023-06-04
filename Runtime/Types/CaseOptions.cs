@@ -1,6 +1,8 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// 各 TestCase に local に適用されるオプション
@@ -10,7 +12,8 @@ namespace Edanoue.TestAPI
         /// <summary>
         /// TestCase 自体の 実行時間の制限
         /// Runner に設定されている値より 少ない場合こちらが優先されます
-        /// /// </summary>
+        /// ///
+        /// </summary>
         public readonly float LocalTimeoutSeconds;
 
         public CaseOptions(float localTimeoutSeconds)

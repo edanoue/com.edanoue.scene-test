@@ -1,28 +1,16 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
-using System.Collections;
 using UnityEngine;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// テストケース として振る舞う拡張 MonoBehaviour クラス
     /// </summary>
     public abstract class EdaTestBehaviour : MonoBehaviour, ITestCase
     {
-        #region IEdaTestCase
-
-        bool ITestCase.IsRunning => this.IsRunning;
-        void ITestCase.OnRun() => this.OnRun();
-        void ITestCase.OnCancel() => this.OnCancel();
-        void ITestCase.OnTimeout() => this.OnTimeout();
-        ITestReport ITestCase.Report => this._testReport;
-        CaseOptions ITestCase.Options => this._localOptions;
-
-        #endregion
-
-        #region Unity 公開 Property
-
         /// <summary>
         /// Inspector から設定できるテスト名
         /// 指定されていない場合クラス名が使用される
@@ -34,23 +22,46 @@ namespace Edanoue.TestAPI
         /// <summary>
         /// Inspector から設定できるこのテスト独自のTimeout時間
         /// Runner 側に指定されている時間より短い場合, こちらの時間が使用されます
-        /// <summary>
+        /// </summary>
         [SerializeField]
         private float m_timeoutSeconds = 10f;
-
-        #endregion
 
         /// <summary>
         /// 継承先でオーバーライドできるテスト名
         /// デフォルトではクラス名を使用する
         /// </summary>
-        protected virtual string TestName => m_customTestName == "" ? this.GetType().Name : m_customTestName;
+        protected virtual string TestName => m_customTestName == "" ? GetType().Name : m_customTestName;
+
+
+        bool ITestCase.IsRunning => IsRunning;
+
+        void ITestCase.OnRun()
+        {
+            OnRun();
+        }
+
+        void ITestCase.OnCancel()
+        {
+            OnCancel();
+        }
+
+        void ITestCase.OnTimeout()
+        {
+            OnTimeout();
+        }
+
+        ITestReport ITestCase.Report => _testReport;
+        CaseOptions ITestCase.Options => _localOptions;
 
         // 成功したときのコールバック, ここでは空にしておく
-        protected virtual void OnSuccess() { }
+        protected virtual void OnSuccess()
+        {
+        }
 
         // 失敗したときのコールバック, ここでは空にしておく
-        protected virtual void OnFail() { }
+        protected virtual void OnFail()
+        {
+        }
 
         /// <summary>
         /// Runner により呼ばれる タイムアウトされたときのコールバック
@@ -58,28 +69,29 @@ namespace Edanoue.TestAPI
         protected virtual void OnTimeout()
         {
             // デフォルトではタイムアウトの場合は Fail する
-            Fail("Timeouted");
+            Fail("Timeout");
         }
+
 
         #region 内部処理用
 
-        TestReport _testReport;
-        CaseOptions _localOptions;
+        private TestReport  _testReport;
+        private CaseOptions _localOptions;
 
-        bool IsCreated => _testReport.TestStatus == Status.Created;
-        bool IsRunning => _testReport.TestStatus == Status.Running;
-        bool IsSucceeded => _testReport.TestStatus == Status.Succeed;
-        bool IsFailed => _testReport.TestStatus == Status.Failed;
-        bool IsCanceled => _testReport.TestStatus == Status.Canceled;
-        bool IsCompleted => IsSucceeded || IsFailed || IsCanceled;
+        private bool IsCreated => _testReport.TestStatus == SceneTestStatus.Created;
+        private bool IsRunning => _testReport.TestStatus == SceneTestStatus.Running;
+        private bool IsSucceeded => _testReport.TestStatus == SceneTestStatus.Succeed;
+        private bool IsFailed => _testReport.TestStatus == SceneTestStatus.Failed;
+        private bool IsCanceled => _testReport.TestStatus == SceneTestStatus.Canceled;
+        private bool IsCompleted => IsSucceeded || IsFailed || IsCanceled;
 
         // テストレポートの初期化
         private void _createNewTestReport()
         {
             // Create new test report
             //   TestCaseName:   class name
-            //   GameObjectName: attatched gameobject name
-            _testReport = new(TestName, this.gameObject.name);
+            //   GameObjectName: attached game object name
+            _testReport = new TestReport(TestName, gameObject.name);
         }
 
         /// <summary>
@@ -106,12 +118,12 @@ namespace Edanoue.TestAPI
             _createNewTestReport();
 
             // 実行時点で Inspector に設定されているものからオプションを作成する
-            _localOptions = new(
-                localTimeoutSeconds: m_timeoutSeconds
+            _localOptions = new CaseOptions(
+                m_timeoutSeconds
             );
 
             // Set Status to Running
-            _testReport.TestStatus = Status.Running;
+            _testReport.TestStatus = SceneTestStatus.Running;
 
             Debug.Log($"Run {_testReport.TestName}", this);
         }
@@ -123,7 +135,7 @@ namespace Edanoue.TestAPI
         {
             if (IsRunning)
             {
-                _testReport.TestStatus = Status.Canceled;
+                _testReport.TestStatus = SceneTestStatus.Canceled;
                 _testReport.Message = "Manually canceled";
             }
         }
@@ -143,12 +155,14 @@ namespace Edanoue.TestAPI
                 _createNewTestReport();
             }
 
-            if (!IsCompleted)
+            if (IsCompleted)
             {
-                _testReport.TestStatus = Status.Succeed;
-                _testReport.Message = message;
-                OnSuccess();
+                return;
             }
+
+            _testReport.TestStatus = SceneTestStatus.Succeed;
+            _testReport.Message = message;
+            OnSuccess();
         }
 
         /// <summary>
@@ -166,12 +180,14 @@ namespace Edanoue.TestAPI
                 _createNewTestReport();
             }
 
-            if (!IsCompleted)
+            if (IsCompleted)
             {
-                _testReport.TestStatus = Status.Failed;
-                _testReport.Message = message;
-                OnFail();
+                return;
             }
+
+            _testReport.TestStatus = SceneTestStatus.Failed;
+            _testReport.Message = message;
+            OnFail();
         }
 
         #endregion

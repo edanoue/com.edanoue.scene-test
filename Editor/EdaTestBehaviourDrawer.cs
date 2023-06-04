@@ -1,8 +1,8 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 using UnityEditor;
-using UnityEngine;
 
-
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     /// <summary>
     /// EdaTestBehaviour 継承クラスで表示するカスタムエディタ

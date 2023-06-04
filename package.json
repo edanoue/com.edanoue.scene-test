@@ -1,7 +1,7 @@
 {
   "name": "com.edanoue.scenetest",
   "description": "Scene Testing toolset like UE4 BP Testing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Unity Scene Test",
   "unity": "2021.2",
   "dependencies": {

@@ -1,3 +1,5 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
 using System.Collections;
@@ -5,30 +7,22 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
     /// <summary>
-    ///
     /// </summary>
     internal class TestRunner : MonoBehaviour, ITestRunner
     {
-        #region ITestRunner
-
-        IEnumerator ITestRunner.Run(RunnerOptions? options) => this.Run(options);
-        void ITestRunner.Cancel() => this.Cancel();
-        List<ITestReport> ITestRunner.LatestReports => _lastRunningTestReports;
-
-        #endregion
-
         /// <summary>
         /// 開始時にキャッシュされるテストの一覧
         /// </summary>
         /// <returns></returns>
-        readonly List<ITestCase> _cachedTestCases = new();
-        readonly List<ITestReport> _lastRunningTestReports = new();
+        private readonly List<ITestCase> _cachedTestCases = new();
 
-        bool _bReceivedCacheRequest;
-        bool _isRunning;
+        private readonly List<ITestReport> _lastRunningTestReports = new();
+
+        private bool _bReceivedCacheRequest;
+        private bool _isRunning;
 
         private IEnumerator Run(RunnerOptions? inOptions)
         {
@@ -57,13 +51,13 @@ namespace Edanoue.TestAPI
                 testcase.OnRun();
             }
 
-            Debug.Log($"Start to running test with {this.GetType().Name}", this);
+            Debug.Log($"Start to running test with {GetType().Name}", this);
 
             // オプションが指定されていないならデフォルトのものを用意する
             // 南: なんとなく Global のタイムアウトは 10秒 としています
-            RunnerOptions options = inOptions is null ? new RunnerOptions(10.0f) : inOptions.Value;
+            var options = inOptions is null ? new RunnerOptions(10.0f) : inOptions.Value;
 
-            string optionsStr = "------------------\n";
+            var optionsStr = "------------------\n";
             optionsStr += "options\n";
             optionsStr += "------------------\n";
             optionsStr += $"+ globalTimeOutSeconds: {options.GlobalTimeoutSeconds}\n";
@@ -118,7 +112,7 @@ namespace Edanoue.TestAPI
                 }
 
                 // まだ完了していないテストがあるかどうかを確認するフラグ
-                bool isAnyTestRunning = _cachedTestCases.Count(x => x.IsRunning) > 0;
+                var isAnyTestRunning = _cachedTestCases.Count(x => x.IsRunning) > 0;
                 if (isAnyTestRunning)
                 {
                     // 1フレーム待機する
@@ -127,11 +121,9 @@ namespace Edanoue.TestAPI
                     continue;
                 }
                 // すべてのテストが終了した
-                else
-                {
-                    // ループを抜ける
-                    break;
-                }
+
+                // ループを抜ける
+                break;
             }
 
             // まだ終了していないテストはタイムアウトとする
@@ -181,9 +173,12 @@ namespace Edanoue.TestAPI
         /// <summary>
         /// ユーザーからのキャンセル命令が来た時
         /// </summary>
-        public void Cancel() => _bReceivedCacheRequest = true;
+        public void Cancel()
+        {
+            _bReceivedCacheRequest = true;
+        }
 
-        void FetchAllITestBehaviour()
+        private void FetchAllITestBehaviour()
         {
             // 一度キャッシュを空にする
             _cachedTestCases.Clear();
@@ -199,5 +194,21 @@ namespace Edanoue.TestAPI
                 }
             }
         }
+
+        #region ITestRunner
+
+        IEnumerator ITestRunner.Run(RunnerOptions? options)
+        {
+            return Run(options);
+        }
+
+        void ITestRunner.Cancel()
+        {
+            Cancel();
+        }
+
+        List<ITestReport> ITestRunner.LatestReports => _lastRunningTestReports;
+
+        #endregion
     }
 }

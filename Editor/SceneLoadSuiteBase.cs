@@ -1,3 +1,5 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
 using System.Collections;
@@ -5,16 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEditor.SceneManagement;
-using NUnit.Framework;
 
-namespace Edanoue.TestAPI
+namespace Edanoue.SceneTest
 {
-
     /// <summary>
-    ///
     /// </summary>
     public abstract class SceneLoadSuiteBase
     {
@@ -24,20 +24,7 @@ namespace Edanoue.TestAPI
         /// <value></value>
         protected abstract string ScenePath { get; }
 
-        /// <summary>
-        /// このシーンの呼び出し元
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        protected static string ScriptDir([CallerFilePath] string fileName = "")
-        {
-            var absdir = Path.GetDirectoryName(fileName);
-            string pattern = @"Assets[\\/].+";
-            var match = Regex.Match(absdir, pattern);
-            return match.Success ? match.Value : "";
-        }
-
-        bool IsLoadedTestScene
+        private bool IsLoadedTestScene
         {
             get
             {
@@ -47,6 +34,19 @@ namespace Edanoue.TestAPI
                 // この scene が有効な場合はすでにロードされている
                 return scene.IsValid();
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        protected static string ScriptDir([CallerFilePath] string fileName = "")
+        {
+            var directoryName = Path.GetDirectoryName(fileName);
+            const string pattern = @"Assets[\\/].+";
+            var match = Regex.Match(directoryName, pattern);
+            return match.Success ? match.Value : "";
         }
 
         protected virtual IEnumerator LoadTestSceneAsync()
@@ -90,7 +90,6 @@ namespace Edanoue.TestAPI
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="timeoutSeconds"></param>
         /// <param name="isAutoLoadUnload"></param>
@@ -109,7 +108,7 @@ namespace Edanoue.TestAPI
             GameObject? createdRunnerGo = null;
 
             // ITestRunner 実装コンポーネントをすべて検索する
-            foreach (var r in GameObject.FindObjectsOfType<MonoBehaviour>().OfType<ITestRunner>())
+            foreach (var r in Object.FindObjectsOfType<MonoBehaviour>().OfType<ITestRunner>())
             {
                 runner = r;
                 break;
@@ -119,7 +118,7 @@ namespace Edanoue.TestAPI
             if (runner == null)
             {
                 createdRunnerGo = new GameObject("__runner__");
-                runner = createdRunnerGo.AddComponent<TestAPI.TestRunner>();
+                runner = createdRunnerGo.AddComponent<TestRunner>();
                 Debug.Log("Created new TestRunner");
             }
 
@@ -132,7 +131,7 @@ namespace Edanoue.TestAPI
             // runner を自動生成しているならば手動で削除する
             if (createdRunnerGo != null)
             {
-                GameObject.DestroyImmediate(createdRunnerGo);
+                Object.DestroyImmediate(createdRunnerGo);
                 Debug.Log("Destroyed TestRunner");
             }
 
@@ -143,7 +142,7 @@ namespace Edanoue.TestAPI
             }
 
             // テストレポートの表示 を行う
-            string reportsStr = "";
+            var reportsStr = "";
             reportsStr += "==========================\n";
             reportsStr += "        Test Report       \n";
             reportsStr += "==========================\n";
@@ -156,7 +155,8 @@ namespace Edanoue.TestAPI
                 {
                     reportsStr += $"{pair.Key}: {pair.Value}\n";
                 }
-                reportsStr += $"--------------------------\n";
+
+                reportsStr += "--------------------------\n";
             }
 
             Debug.Log(reportsStr);
@@ -164,7 +164,7 @@ namespace Edanoue.TestAPI
             foreach (var report in reports)
             {
                 // テストが失敗していた時
-                if (report.Status == Status.Failed)
+                if (report.Status == SceneTestStatus.Failed)
                 {
                     // TODO: まとめてログ出したいよね
                     var message = $"{report.Name}: {report.Message}";
