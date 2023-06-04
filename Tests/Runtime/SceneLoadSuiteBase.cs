@@ -11,7 +11,7 @@ namespace SceneLoadSuiteBase関連
 {
     internal class シーンロード関連のテストケース : SceneLoadSuiteBase
     {
-        protected override string ScenePath => $"{ScriptDir()}/Scenes/__EmptyScene.unity";
+        protected override string ScenePath => $"{GetCalledScriptDir()}/Scenes/__EmptyScene.unity";
 
         [UnityTest]
         public IEnumerator LoadTestSceneAsyncTest()
@@ -68,7 +68,7 @@ namespace SceneLoadSuiteBase関連
 
     internal class 空のシーンが指定されたテストケース : SceneLoadSuiteBase
     {
-        protected override string ScenePath => $"{ScriptDir()}/Scenes/__EmptyScene.unity";
+        protected override string ScenePath => $"{GetCalledScriptDir()}/Scenes/__EmptyScene.unity";
 
         [UnityTest]
         public IEnumerator テスト実行時にRunnerが存在しないシーンなら自動で生成が行われる()

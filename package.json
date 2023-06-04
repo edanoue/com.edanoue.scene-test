@@ -1,8 +1,8 @@
 {
-  "name": "com.edanoue.scenetest",
+  "name": "com.edanoue.scene-test",
   "description": "Scene Testing toolset like UE4 BP Testing",
   "version": "1.1.0",
-  "displayName": "Unity Scene Test",
+  "displayName": "Edanoue SceneTest",
   "unity": "2021.2",
   "dependencies": {
     "com.unity.test-framework": "1.1.30"
@@ -13,9 +13,6 @@
       "description": "",
       "path": "Samples~/Unit Test Samples"
     }
-  ],
-  "keywords": [
-    "testing"
   ],
   "author": {
     "name": "Edanoue, Inc.",

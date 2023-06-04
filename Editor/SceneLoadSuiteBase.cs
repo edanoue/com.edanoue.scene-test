@@ -2,15 +2,18 @@
 
 #nullable enable
 
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Edanoue.SceneTest
 {
@@ -18,10 +21,12 @@ namespace Edanoue.SceneTest
     /// </summary>
     public abstract class SceneLoadSuiteBase
     {
+        private readonly StringBuilder _testReportSb = new();
+
         /// <summary>
-        /// ロードするテスト用のシーンのパス (Assets/foo/bar.unity という形式で指定すること)
+        /// ロードするテスト用のシーンのパスを指定
         /// </summary>
-        /// <value></value>
+        /// <remarks>Assets/foo/bar.unity という形式で指定すること</remarks>
         protected abstract string ScenePath { get; }
 
         private bool IsLoadedTestScene
@@ -37,16 +42,27 @@ namespace Edanoue.SceneTest
         }
 
         /// <summary>
-        /// 
+        /// Gets the directory of the called script.
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        protected static string ScriptDir([CallerFilePath] string fileName = "")
+        protected static string GetCalledScriptDir([CallerFilePath] string fileName = "")
         {
             var directoryName = Path.GetDirectoryName(fileName);
-            const string pattern = @"Assets[\\/].+";
-            var match = Regex.Match(directoryName, pattern);
-            return match.Success ? match.Value : "";
+            if (!string.IsNullOrEmpty(directoryName))
+            {
+                // Assets/ または Packages/ から始まるパスを取得する
+                const string pattern = @"(Assets|Packages)[\\/].+";
+                var match = Regex.Match(directoryName, pattern);
+                if (match.Success)
+                {
+                    // Convert to UNIX path sep.
+                    var result = match.Value.Replace("\\", "/");
+                    return result;
+                }
+            }
+            
+            throw new ArgumentNullException($"Failed to get valid directory name: {fileName}");
         }
 
         protected virtual IEnumerator LoadTestSceneAsync()
@@ -142,24 +158,24 @@ namespace Edanoue.SceneTest
             }
 
             // テストレポートの表示 を行う
-            var reportsStr = "";
-            reportsStr += "==========================\n";
-            reportsStr += "        Test Report       \n";
-            reportsStr += "==========================\n";
+            _testReportSb.Clear();
+            _testReportSb.Append("==========================\n");
+            _testReportSb.Append("        Test Report       \n");
+            _testReportSb.Append("==========================\n");
 
             foreach (var report in reports)
             {
-                reportsStr += $"{report.Name}: {report.Status}\n";
-                reportsStr += $"msg: {report.Message}\n";
+                _testReportSb.Append($"{report.Name}: {report.Status}\n");
+                _testReportSb.Append($"msg: {report.Message}\n");
                 foreach (var pair in report.CustomInfos)
                 {
-                    reportsStr += $"{pair.Key}: {pair.Value}\n";
+                    _testReportSb.Append($"{pair.Key}: {pair.Value}\n");
                 }
 
-                reportsStr += "--------------------------\n";
+                _testReportSb.Append("--------------------------\n");
             }
 
-            Debug.Log(reportsStr);
+            Debug.Log(_testReportSb.ToString());
 
             foreach (var report in reports)
             {
