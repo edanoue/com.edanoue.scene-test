@@ -12,12 +12,9 @@ namespace Edanoue.SceneTest
     public abstract class EdaTestBehaviour : MonoBehaviour, ITestCase
     {
         /// <summary>
-        /// Inspector から設定できるテスト名
-        /// 指定されていない場合クラス名が使用される
         /// </summary>
         [SerializeField]
-        private string m_customTestName = "";
-
+        private bool m_useGameObjectNameAsTestName = true;
 
         /// <summary>
         /// Inspector から設定できるこのテスト独自のTimeout時間
@@ -26,11 +23,22 @@ namespace Edanoue.SceneTest
         [SerializeField]
         private float m_timeoutSeconds = 10f;
 
+        private CaseOptions _localOptions;
+
+        private TestReport _testReport;
+
         /// <summary>
         /// 継承先でオーバーライドできるテスト名
         /// デフォルトではクラス名を使用する
         /// </summary>
-        protected virtual string TestName => m_customTestName == "" ? GetType().Name : m_customTestName;
+        protected virtual string TestName => m_useGameObjectNameAsTestName ? gameObject.name : GetType().Name;
+
+        private bool IsNotRunning => _testReport.TestStatus == SceneTestStatus.NotRunning;
+        private bool IsRunning => (_testReport.TestStatus & SceneTestStatus.Running) != 0;
+        private bool IsSucceeded => (_testReport.TestStatus & SceneTestStatus.Succeed) != 0;
+        private bool IsFailed => (_testReport.TestStatus & SceneTestStatus.Failed) != 0;
+        private bool IsCanceled => (_testReport.TestStatus & SceneTestStatus.Canceled) != 0;
+        private bool IsCompleted => (_testReport.TestStatus & SceneTestStatus.Completed) != 0;
 
 
         bool ITestCase.IsRunning => IsRunning;
@@ -72,21 +80,8 @@ namespace Edanoue.SceneTest
             Fail("Timeout");
         }
 
-
-        #region 内部処理用
-
-        private TestReport  _testReport;
-        private CaseOptions _localOptions;
-
-        private bool IsCreated => _testReport.TestStatus == SceneTestStatus.Created;
-        private bool IsRunning => _testReport.TestStatus == SceneTestStatus.Running;
-        private bool IsSucceeded => _testReport.TestStatus == SceneTestStatus.Succeed;
-        private bool IsFailed => _testReport.TestStatus == SceneTestStatus.Failed;
-        private bool IsCanceled => _testReport.TestStatus == SceneTestStatus.Canceled;
-        private bool IsCompleted => IsSucceeded || IsFailed || IsCanceled;
-
         // テストレポートの初期化
-        private void _createNewTestReport()
+        private void CreateNewTestReport()
         {
             // Create new test report
             //   TestCaseName:   class name
@@ -115,7 +110,7 @@ namespace Edanoue.SceneTest
                 return;
             }
 
-            _createNewTestReport();
+            CreateNewTestReport();
 
             // 実行時点で Inspector に設定されているものからオプションを作成する
             _localOptions = new CaseOptions(
@@ -125,7 +120,7 @@ namespace Edanoue.SceneTest
             // Set Status to Running
             _testReport.TestStatus = SceneTestStatus.Running;
 
-            Debug.Log($"Run {_testReport.TestName}", this);
+            Debug.Log($"\t'{_testReport.TestName}'", this);
         }
 
         /// <summary>
@@ -149,10 +144,10 @@ namespace Edanoue.SceneTest
         {
             // まだRunner によりテストが実行されていない状態
             // 例えば Awake などですでにテスト結果が決まっているときなど
-            if (IsCreated)
+            if (IsNotRunning)
             {
                 // まだテストレポートが作成されていないので新規に作成する
-                _createNewTestReport();
+                CreateNewTestReport();
             }
 
             if (IsCompleted)
@@ -174,10 +169,10 @@ namespace Edanoue.SceneTest
         {
             // まだRunner によりテストが実行されていない状態
             // 例えば Awake などですでにテスト結果が決まっているときなど
-            if (IsCreated)
+            if (IsNotRunning)
             {
                 // まだテストレポートが作成されていないので新規に作成する
-                _createNewTestReport();
+                CreateNewTestReport();
             }
 
             if (IsCompleted)
@@ -189,7 +184,5 @@ namespace Edanoue.SceneTest
             _testReport.Message = message;
             OnFail();
         }
-
-        #endregion
     }
 }

@@ -21,6 +21,7 @@ namespace Edanoue.SceneTest
     /// </summary>
     public abstract class SceneLoadSuiteBase
     {
+        // TestReport 作成用の StringBuilder
         private readonly StringBuilder _testReportSb = new();
 
         /// <summary>
@@ -116,7 +117,6 @@ namespace Edanoue.SceneTest
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="options"></param>
         /// <param name="isAutoLoadUnload"></param>
@@ -145,8 +145,8 @@ namespace Edanoue.SceneTest
             if (runner == null)
             {
                 createdRunnerGo = new GameObject("__runner__");
-                runner = createdRunnerGo.AddComponent<TestRunner>();
-                Debug.Log("Created new TestRunner");
+                runner = createdRunnerGo.AddComponent<EdaSceneTestRunner>();
+                Debug.Log("[SceneTest] Created new TestRunner.", createdRunnerGo);
             }
 
             // テストを実行する
@@ -159,7 +159,7 @@ namespace Edanoue.SceneTest
             if (createdRunnerGo != null)
             {
                 Object.DestroyImmediate(createdRunnerGo);
-                Debug.Log("Destroyed TestRunner");
+                Debug.Log("[SceneTest] Destroyed TestRunner");
             }
 
             // 自動ロード・アンロードのオプションが指定されていたら シーンのアンロードを行う

@@ -34,7 +34,7 @@ namespace Edanoue.SceneTest
         {
             TestName = testName;
             GameObjectName = gameObjectName;
-            TestStatus = SceneTestStatus.Created;
+            TestStatus = SceneTestStatus.NotRunning;
             Message = "";
             CustomInfos = new Dictionary<string, string>();
         }

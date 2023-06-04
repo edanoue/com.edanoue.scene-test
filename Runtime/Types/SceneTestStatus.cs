@@ -2,23 +2,18 @@
 
 #nullable enable
 
+using System;
+
 namespace Edanoue.SceneTest
 {
-    public enum SceneTestStatus
+    [Flags]
+    public enum SceneTestStatus : byte
     {
-        // 一度もRunnerにより実行されていない 生成直後 の状態
-        Created,
-
-        // 現在 テストが 実行中
-        Running,
-
-        // 成功して終了
-        Succeed,
-
-        // 失敗して終了
-        Failed,
-
-        // キャンセルされて終了
-        Canceled
+        NotRunning = 0,
+        Running    = 1 << 0,
+        Succeed    = 1 << 1,
+        Failed     = 1 << 2,
+        Canceled   = 1 << 3,
+        Completed  = Succeed | Failed | Canceled
     }
 }

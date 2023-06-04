@@ -11,7 +11,7 @@ namespace Edanoue.SceneTest
 {
     /// <summary>
     /// </summary>
-    internal class TestRunner : MonoBehaviour, ITestRunner
+    internal sealed class EdaSceneTestRunner : MonoBehaviour, ITestRunner
     {
         /// <summary>
         /// 開始時にキャッシュされるテストの一覧
@@ -24,12 +24,25 @@ namespace Edanoue.SceneTest
         private bool _bReceivedCacheRequest;
         private bool _isRunning;
 
+
+        IEnumerator ITestRunner.Run(RunnerOptions? options)
+        {
+            return Run(options);
+        }
+
+        void ITestRunner.Cancel()
+        {
+            Cancel();
+        }
+
+        List<ITestReport> ITestRunner.LatestReports => _lastRunningTestReports;
+
         private IEnumerator Run(RunnerOptions? inOptions)
         {
             // すでに Runner が実行中なので抜ける
             if (_isRunning)
             {
-                Debug.LogWarning("Already Running", this);
+                Debug.LogWarning("[EdaSceneTestRunner] Already Running", this);
                 yield break;
             }
 
@@ -39,41 +52,44 @@ namespace Edanoue.SceneTest
             // 何もキャッシュにないので実行しない
             if (_cachedTestCases.Count == 0)
             {
-                Debug.LogWarning($"Not founded {nameof(ITestCase)} implemented components. skipped testing.", this);
+                Debug.LogWarning(
+                    $"[EdaSceneTestRunner] Not founded {nameof(ITestCase)} implemented components. skipped testing.",
+                    this);
                 yield break;
             }
 
+            Debug.Log($"[EdaSceneTestRunner] Founding {_cachedTestCases.Count} tests in Scene", this);
+
             // テストの開始
             _isRunning = true;
-            Debug.Log("Founding tests in Scene...", this);
             foreach (var testcase in _cachedTestCases)
             {
                 testcase.OnRun();
             }
 
-            Debug.Log($"Start to running test with {GetType().Name}", this);
+            Debug.Log("[EdaSceneTestRunner] Start to tests ...", this);
 
             // オプションが指定されていないならデフォルトのものを用意する
             // 南: なんとなく Global のタイムアウトは 10秒 としています
             var options = inOptions is null ? new RunnerOptions(10.0f) : inOptions.Value;
 
             var optionsStr = "------------------\n";
-            optionsStr += "options\n";
+            optionsStr += "    Options\n";
             optionsStr += "------------------\n";
             optionsStr += $"+ globalTimeOutSeconds: {options.GlobalTimeoutSeconds}\n";
             optionsStr += "\n";
             Debug.Log(optionsStr);
 
             // 無限ループ防止のタイマーをセットアップ
-            var _timeoutSeconds = options.GlobalTimeoutSeconds;
+            var timeoutSeconds = options.GlobalTimeoutSeconds;
             // 負の値を防止するために, 0.001 秒を最低値として設定しておく
-            _timeoutSeconds = Mathf.Max(_timeoutSeconds, 0.001f);
-            var _globalTimeoutTimer = new WaitForSecondsRealtime(_timeoutSeconds);
+            timeoutSeconds = Mathf.Max(timeoutSeconds, 0.001f);
+            var globalTimeoutTimer = new WaitForSecondsRealtime(timeoutSeconds);
 
             // ローカルのタイムアウト確認用のタイマーのマップを作成しておく
             Dictionary<ITestCase, IEnumerator> _localTimeoutTimerMap = new();
 
-            while (_globalTimeoutTimer.MoveNext())
+            while (globalTimeoutTimer.MoveNext())
             {
                 // キャンセルの命令が来た場合はループを抜ける
                 if (_bReceivedCacheRequest)
@@ -132,7 +148,7 @@ namespace Edanoue.SceneTest
                 test.OnTimeout();
             }
 
-            Debug.Log("Completed to test!", this);
+            Debug.Log("[EdaSceneTestRunner] ... Completed to test!", this);
 
             // Test Report を収集しておく
             _lastRunningTestReports.Clear();
@@ -140,7 +156,7 @@ namespace Edanoue.SceneTest
             {
                 var report = test.Report;
 
-                // Custon Info に ゲームオブジェクト情報も入れておく
+                // Custom Info に ゲームオブジェクト情報も入れておく
                 if (test is MonoBehaviour mb)
                 {
                     report.CustomInfos.Add("GameObject", mb.gameObject.name);
@@ -148,7 +164,7 @@ namespace Edanoue.SceneTest
 
                 // Custom Info に タイムアウト情報も入れておく
                 {
-                    var globalTimeoutSec = _timeoutSeconds;
+                    var globalTimeoutSec = timeoutSeconds;
                     var localTimeoutSec = Mathf.Max(test.Options.LocalTimeoutSeconds, 0.001f);
 
                     if (globalTimeoutSec > localTimeoutSec)
@@ -194,21 +210,5 @@ namespace Edanoue.SceneTest
                 }
             }
         }
-
-        #region ITestRunner
-
-        IEnumerator ITestRunner.Run(RunnerOptions? options)
-        {
-            return Run(options);
-        }
-
-        void ITestRunner.Cancel()
-        {
-            Cancel();
-        }
-
-        List<ITestReport> ITestRunner.LatestReports => _lastRunningTestReports;
-
-        #endregion
     }
 }
