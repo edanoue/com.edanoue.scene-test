@@ -1,5 +1,6 @@
 // Copyright Edanoue, Inc. All Rights Reserved.
 
+#nullable enable
 using System.Collections;
 using Edanoue.SceneTest;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace SceneLoadSuiteBase関連
         protected override string ScenePath => $"{GetCalledScriptDir()}/Scenes/__EmptyScene.unity";
 
         [UnityTest]
-        public IEnumerator LoadTestSceneAsyncTest()
+        public IEnumerator クラス内で指定したSceneをロードすることができる()
         {
             // シーンのロードを行う
             yield return LoadTestSceneAsync();
@@ -25,12 +26,12 @@ namespace SceneLoadSuiteBase関連
             // この scene が有効な場合はすでにロードされている
             Assert.That(scene.IsValid(), Is.True);
 
-            // アンロードしておく
-            yield return SceneManager.UnloadSceneAsync(ScenePath);
+            // 他のテストのためにアンロードしておく (アンロードはテストしない)
+            yield return UnloadTestSceneAsync();
         }
 
         [UnityTest]
-        public IEnumerator UnloadTestSceneAsyncTest()
+        public IEnumerator クラス内で指定したSceneをアンロードすることができる()
         {
             // シーンのロードを行う
             // この関数が成功することは他のテストにより保証されている

@@ -61,7 +61,7 @@ namespace Edanoue.SceneTest
                     return result;
                 }
             }
-            
+
             throw new ArgumentNullException($"Failed to get valid directory name: {fileName}");
         }
 
@@ -70,7 +70,7 @@ namespace Edanoue.SceneTest
             // すでにシーンがロード済みの場合は処理をスキップする
             if (IsLoadedTestScene)
             {
-                Debug.Log($"Already loaded scene: {ScenePath}");
+                Debug.Log($"[SceneTest] Already loaded scene: {ScenePath}. Skip to load.");
                 yield break;
             }
 
@@ -83,7 +83,11 @@ namespace Edanoue.SceneTest
 
             if (IsLoadedTestScene)
             {
-                Debug.Log($"Loaded test scene: {ScenePath}");
+                Debug.Log($"[SceneTest] Loaded test scene: {ScenePath}");
+            }
+            else
+            {
+                throw new ApplicationException($"Failed to load test scene: {ScenePath}.");
             }
         }
 
@@ -92,22 +96,29 @@ namespace Edanoue.SceneTest
             // まだシーンが読み込まれていない場合は処理をスキップする
             if (!IsLoadedTestScene)
             {
-                Debug.Log($"Already unloaded scene: {ScenePath}");
+                Debug.LogWarning($"[SceneTest] Scene: {ScenePath} was not loaded. Skip to unload.");
                 yield break;
             }
 
             // 加算ロードしたテスト用のシーンを破棄する
-            yield return SceneManager.UnloadSceneAsync(ScenePath);
+            // シーンが読み込まれているかどうかを確認するため, パスから Scene を取得する
+            var scene = SceneManager.GetSceneByPath(ScenePath);
+            yield return SceneManager.UnloadSceneAsync(scene);
 
             if (!IsLoadedTestScene)
             {
-                Debug.Log($"Unloaded test scene: {ScenePath}");
+                Debug.Log($"[SceneTest] Unloaded test scene: {ScenePath}");
+            }
+            else
+            {
+                throw new ApplicationException($"Failed to unload test scene: {ScenePath}.");
             }
         }
 
         /// <summary>
+        /// 
         /// </summary>
-        /// <param name="timeoutSeconds"></param>
+        /// <param name="options"></param>
         /// <param name="isAutoLoadUnload"></param>
         /// <returns></returns>
         protected virtual IEnumerator RunTestAsync(RunnerOptions? options = null, bool isAutoLoadUnload = true)
