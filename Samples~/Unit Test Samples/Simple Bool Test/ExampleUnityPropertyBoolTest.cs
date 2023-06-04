@@ -1,18 +1,22 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 #if UNITY_EDITOR
 
-using Edanoue.TestAPI;
+using Edanoue.SceneTest;
+using UnityEngine;
 
 /// <summary>
 /// Unity の Inspector のチェックボックスにより可否が決まるテストクラス
 /// </summary>
-class ExampleUnityPropertyBoolTest : EdaTestBehaviour
+internal class ExampleUnityPropertyBoolTest : EdaTestBehaviour
 {
-    public bool テストに成功するかどうか;
+    [SerializeField]
+    private bool m_forcePassedTest;
 
-    void Awake()
+    private void Awake()
     {
-        if (テストに成功するかどうか)
+        if (m_forcePassedTest)
         {
             Success("テストに成功しました");
         }
@@ -22,4 +26,5 @@ class ExampleUnityPropertyBoolTest : EdaTestBehaviour
         }
     }
 }
+
 #endif

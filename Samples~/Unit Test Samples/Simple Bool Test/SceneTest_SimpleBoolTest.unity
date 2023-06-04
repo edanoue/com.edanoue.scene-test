@@ -104,7 +104,7 @@ NavMeshSettings:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_BuildSettings:
-    serializedVersion: 2
+    serializedVersion: 3
     agentTypeID: 0
     agentRadius: 0.5
     agentHeight: 2
@@ -117,13 +117,13 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualTileSize: 0
     tileSize: 256
-    accuratePlacement: 0
+    buildHeightMesh: 0
     maxJobWorkers: 0
     preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1064868856
+--- !u!1 &841240748
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,35 +131,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1064868858}
-  - component: {fileID: 1064868857}
+  - component: {fileID: 841240750}
+  - component: {fileID: 841240749}
   m_Layer: 0
-  m_Name: TestCase_02
+  m_Name: Force Failed Test Case
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1064868857
+--- !u!114 &841240749
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1064868856}
+  m_GameObject: {fileID: 841240748}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8e145ddb4eef01747b2ec3daa5fb79c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  "\u30C6\u30B9\u30C8\u306B\u6210\u529F\u3059\u308B\u304B\u3069\u3046\u304B": 1
---- !u!4 &1064868858
+  m_useGameObjectNameAsTestName: 0
+  m_timeoutSeconds: 10
+  m_forcePassedTest: 0
+--- !u!4 &841240750
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1064868856}
+  m_GameObject: {fileID: 841240748}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -179,7 +181,7 @@ GameObject:
   - component: {fileID: 2093371302}
   - component: {fileID: 2093371303}
   m_Layer: 0
-  m_Name: TestCase_01
+  m_Name: Force Passed Test Case
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -212,4 +214,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e145ddb4eef01747b2ec3daa5fb79c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  "\u30C6\u30B9\u30C8\u306B\u6210\u529F\u3059\u308B\u304B\u3069\u3046\u304B": 1
+  m_useGameObjectNameAsTestName: 0
+  m_timeoutSeconds: 10
+  m_forcePassedTest: 1

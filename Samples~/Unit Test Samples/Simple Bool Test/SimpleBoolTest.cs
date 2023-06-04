@@ -1,14 +1,16 @@
+// Copyright Edanoue, Inc. All Rights Reserved.
+
 #nullable enable
 
 #if UNITY_EDITOR
 
 using System.Collections;
+using Edanoue.SceneTest;
 using UnityEngine.TestTools;
-using Edanoue.TestAPI;
 
-class SimpleBoolTest : SceneLoadSuiteBase
+internal class SimpleBoolTest : SceneLoadSuiteBase
 {
-    protected override string ScenePath => $"{ScriptDir()}/SceneTest_SimpleBoolTest.unity";
+    protected override string ScenePath => $"{GetCalledScriptDir()}/SceneTest_SimpleBoolTest.unity";
 
     [UnityTest]
     public IEnumerator RunSceneTest()
