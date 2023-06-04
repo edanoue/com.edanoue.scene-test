@@ -159,7 +159,7 @@ namespace Edanoue.SceneTest
             if (createdRunnerGo != null)
             {
                 Object.DestroyImmediate(createdRunnerGo);
-                Debug.Log("[SceneTest] Destroyed TestRunner");
+                Debug.Log("[SceneTest] Destroyed TestRunner.");
             }
 
             // 自動ロード・アンロードのオプションが指定されていたら シーンのアンロードを行う

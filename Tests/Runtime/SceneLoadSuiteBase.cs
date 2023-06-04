@@ -81,8 +81,8 @@ namespace SceneLoadSuiteBase関連
             // Run を実行すると Runner が自動で生成される
             // Coroutine で生成, 実行, 破棄まで一気に行ってしまうため
             // ログが出現したかどうかを確認する
-            LogAssert.Expect(LogType.Log, "Created new TestRunner");
-            LogAssert.Expect(LogType.Log, "Destroyed TestRunner");
+            LogAssert.Expect(LogType.Log, "[SceneTest] Created new TestRunner.");
+            LogAssert.Expect(LogType.Log, "[SceneTest] Destroyed TestRunner.");
             yield return RunTestAsync(isAutoLoadUnload: false);
 
             // アンロードしておく
@@ -98,7 +98,7 @@ namespace SceneLoadSuiteBase関連
             // 現在指定しているシーンは空のシーンのため なにもテストが実行されない
             // このばあい, Log に Warning がでていることを確認する
             LogAssert.Expect(LogType.Warning,
-                $"Not founded {nameof(ITestCase)} implemented components. skipped testing.");
+                $"[EdaSceneTestRunner] Not founded {nameof(ITestCase)} implemented components. skipped testing.");
             yield return RunTestAsync(isAutoLoadUnload: false);
 
             // アンロードしておく
