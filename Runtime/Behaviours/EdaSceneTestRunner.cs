@@ -81,15 +81,16 @@ namespace Edanoue.SceneTest
             Debug.Log(optionsStr);
 
             // 無限ループ防止のタイマーをセットアップ
-            var timeoutSeconds = options.GlobalTimeoutSeconds;
+            var globalTimeLimit = options.GlobalTimeoutSeconds;
             // 負の値を防止するために, 0.001 秒を最低値として設定しておく
-            timeoutSeconds = Mathf.Max(timeoutSeconds, 0.001f);
-            var globalTimeoutTimer = new WaitForSecondsRealtime(timeoutSeconds);
+            globalTimeLimit = Mathf.Max(globalTimeLimit, 0.001f);
+
+            var testRunningTimer = 0f;
 
             // ローカルのタイムアウト確認用のタイマーのマップを作成しておく
-            Dictionary<ITestCase, IEnumerator> _localTimeoutTimerMap = new();
+            Dictionary<ITestCase, float> localTimeoutTimerMap = new();
 
-            while (globalTimeoutTimer.MoveNext())
+            while (true)
             {
                 // キャンセルの命令が来た場合はループを抜ける
                 if (_bReceivedCacheRequest)
@@ -104,22 +105,28 @@ namespace Edanoue.SceneTest
                     break;
                 }
 
+                // Global の Timeout に達した場合はループを抜ける
+                if (testRunningTimer > globalTimeLimit)
+                {
+                    break;
+                }
+
                 // 実行中のテストケース の タイムアウトを確認する
                 foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
                 {
                     // まだタイマーが作成されていなかったら作成する
-                    if (!_localTimeoutTimerMap.ContainsKey(test))
+                    if (!localTimeoutTimerMap.ContainsKey(test))
                     {
-                        var _localTimeoutSeconds = test.Options.LocalTimeoutSeconds;
+                        var localTimeoutSeconds = test.Options.LocalTimeoutSeconds;
                         // 負の値を防止するために, 0.001 秒を最低値として設定しておく
-                        _localTimeoutSeconds = Mathf.Max(_localTimeoutSeconds, 0.001f);
-                        _localTimeoutTimerMap.Add(test, new WaitForSecondsRealtime(_localTimeoutSeconds));
+                        localTimeoutSeconds = Mathf.Max(localTimeoutSeconds, 0.001f);
+                        localTimeoutTimerMap.Add(test, localTimeoutSeconds);
                     }
 
-                    if (_localTimeoutTimerMap.TryGetValue(test, out var timer))
+                    if (localTimeoutTimerMap.TryGetValue(test, out var localTimeLimit))
                     {
                         // タイマーを進めて 終了を判定する
-                        if (!timer.MoveNext())
+                        if (testRunningTimer > localTimeLimit)
                         {
                             // TestCase 側でタイムアウトしたため, OnTimeout を実行する
                             test.OnTimeout();
@@ -127,12 +134,14 @@ namespace Edanoue.SceneTest
                     }
                 }
 
-                // まだ完了していないテストがあるかどうかを確認するフラグ
+                // まだ完了していないテストがある場合は次のフレームに
                 var isAnyTestRunning = _cachedTestCases.Count(x => x.IsRunning) > 0;
                 if (isAnyTestRunning)
                 {
+                    // タイマーに DeltaTime を加算する
+                    testRunningTimer += Time.deltaTime;
                     // 1フレーム待機する
-                    yield return null;
+                    yield return new WaitForEndOfFrame();
                     // ループを続行する
                     continue;
                 }
@@ -164,7 +173,7 @@ namespace Edanoue.SceneTest
 
                 // Custom Info に タイムアウト情報も入れておく
                 {
-                    var globalTimeoutSec = timeoutSeconds;
+                    var globalTimeoutSec = globalTimeLimit;
                     var localTimeoutSec = Mathf.Max(test.Options.LocalTimeoutSeconds, 0.001f);
 
                     if (globalTimeoutSec > localTimeoutSec)
