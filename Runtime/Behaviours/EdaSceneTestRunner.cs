@@ -89,9 +89,11 @@ namespace Edanoue.SceneTest
             // ローカルのタイムアウト確認用のタイマーのマップを作成しておく
             Dictionary<ITestCase, double> localTimeoutTimerMap = new();
 
+            var timeSinceLevelLoadAsOffset = Time.timeSinceLevelLoadAsDouble;
+
             while (true)
             {
-                var timeSinceLevelLoadAs = Time.timeSinceLevelLoadAsDouble;
+                var timeSinceLevelLoadAs = Time.timeSinceLevelLoadAsDouble - timeSinceLevelLoadAsOffset;
 
                 // キャンセルの命令が来た場合はループを抜ける
                 if (_bReceivedCacheRequest)
@@ -139,8 +141,6 @@ namespace Edanoue.SceneTest
                 var isAnyTestRunning = _cachedTestCases.Count(x => x.IsRunning) > 0;
                 if (isAnyTestRunning)
                 {
-                    Debug.Log($"[DT]: [{Time.deltaTime}], [ScinceLoad]: [{timeSinceLevelLoadAs}]");
-
                     // 1フレーム待機する
                     yield return new WaitForEndOfFrame();
                     // ループを続行する
