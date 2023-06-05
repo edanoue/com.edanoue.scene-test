@@ -91,7 +91,7 @@ namespace Edanoue.SceneTest
 
             while (true)
             {
-                var timeSinceLevelLoadAs = Time.realtimeSinceStartupAsDouble;
+                var timeSinceLevelLoadAs = Time.timeSinceLevelLoadAsDouble;
 
                 // キャンセルの命令が来た場合はループを抜ける
                 if (_bReceivedCacheRequest)
