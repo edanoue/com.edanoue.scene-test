@@ -42,6 +42,18 @@ namespace Edanoue.SceneTest
             }
         }
 
+        [OneTimeSetUp]
+        public virtual void OneTimeSetup()
+        {
+            EdaSceneTestStatus.IsRunningEdaSceneTest = true;
+        }
+
+        [OneTimeTearDown]
+        public virtual void OneTearDown()
+        {
+            EdaSceneTestStatus.IsRunningEdaSceneTest = false;
+        }
+
         /// <summary>
         /// Gets the directory of the called script.
         /// </summary>
@@ -159,6 +171,7 @@ namespace Edanoue.SceneTest
             if (createdRunnerGo != null)
             {
                 Object.DestroyImmediate(createdRunnerGo);
+                createdRunnerGo = null;
                 Debug.Log("[SceneTest] Destroyed TestRunner.");
             }
 
@@ -171,7 +184,7 @@ namespace Edanoue.SceneTest
             // テストレポートの表示 を行う
             _testReportSb.Clear();
             _testReportSb.Append("==========================\n");
-            _testReportSb.Append("        Test Report       \n");
+            _testReportSb.Append("       Test Reports       \n");
             _testReportSb.Append("==========================\n");
 
             foreach (var report in reports)

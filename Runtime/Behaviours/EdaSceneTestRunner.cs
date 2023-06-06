@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace Edanoue.SceneTest
@@ -18,7 +19,7 @@ namespace Edanoue.SceneTest
         /// 開始時にキャッシュされるテストの一覧
         /// </summary>
         /// <returns></returns>
-        private readonly List<ITestCase> _cachedTestCases = new();
+        private readonly List<ITestCase> _foundedTestCases = new();
 
         private readonly List<ITestReport> _lastRunningTestReports = new();
 
@@ -28,7 +29,7 @@ namespace Edanoue.SceneTest
 
         IEnumerator ITestRunner.Run(RunnerOptions? options)
         {
-            return Run(options);
+            return RunInternal(options);
         }
 
         void ITestRunner.Cancel()
@@ -38,7 +39,7 @@ namespace Edanoue.SceneTest
 
         List<ITestReport> ITestRunner.LatestReports => _lastRunningTestReports;
 
-        private IEnumerator Run(RunnerOptions? inOptions)
+        private IEnumerator RunInternal(RunnerOptions? inOptions)
         {
             // すでに Runner が実行中なので抜ける
             if (_isRunning)
@@ -50,56 +51,79 @@ namespace Edanoue.SceneTest
             // ロード中のシーン全てから TestCase を収集する
             FetchAllITestBehaviour();
 
-            // 何もキャッシュにないので実行しない
-            if (_cachedTestCases.Count == 0)
+            switch (_foundedTestCases.Count)
             {
-                Debug.LogWarning(
-                    $"[EdaSceneTestRunner] Not founded {nameof(ITestCase)} implemented components. skipped testing.",
-                    this);
-                yield break;
+                // 何もキャッシュにないので実行しない
+                case 0:
+                {
+                    Debug.LogWarning(
+                        $"[EdaSceneTestRunner] Not founded {nameof(ITestCase)} implemented components. skipped testing.",
+                        this);
+                    yield break;
+                }
+                case 1:
+                {
+                    Debug.Log("[EdaSceneTestRunner] Founded 1 test in Scene", this);
+                    break;
+                }
+                default:
+                {
+                    Debug.Log($"[EdaSceneTestRunner] Founded {_foundedTestCases.Count} tests in Scene", this);
+                    break;
+                }
             }
-
-            Debug.Log($"[EdaSceneTestRunner] Founding {_cachedTestCases.Count} tests in Scene", this);
 
             // テストの開始
             _isRunning = true;
-            foreach (var testcase in _cachedTestCases)
+            foreach (var testcase in _foundedTestCases)
             {
                 testcase.OnRun();
             }
 
-            Debug.Log("[EdaSceneTestRunner] Start to tests ...", this);
+            var sb = new StringBuilder();
+            sb.Append("[EdaSceneTestRunner] Start to tests ...\n");
 
             // オプションが指定されていないならデフォルトのものを用意する
             // 南: なんとなく Global のタイムアウトは 10秒 としています
-            var options = inOptions is null ? new RunnerOptions(10.0f) : inOptions.Value;
-
-            var optionsStr = "------------------\n";
-            optionsStr += "    Options\n";
-            optionsStr += "------------------\n";
-            optionsStr += $"+ globalTimeOutSeconds: {options.GlobalTimeoutSeconds}\n";
-            optionsStr += "\n";
-            Debug.Log(optionsStr);
+            var options = inOptions ?? new RunnerOptions(10.0f);
 
             // 無限ループ防止のタイマーをセットアップ
             double globalTimeLimit = options.GlobalTimeoutSeconds;
             // 負の値を防止するために, 0.001 秒を最低値として設定しておく
             globalTimeLimit = Math.Max(globalTimeLimit, 0.001d);
 
+            sb.Append($"\t+ globalTimeOutSeconds: {options.GlobalTimeoutSeconds}\n");
+            Debug.Log(sb.ToString());
+
             // ローカルのタイムアウト確認用のタイマーのマップを作成しておく
             Dictionary<ITestCase, double> localTimeoutTimerMap = new();
 
-            var timeSinceLevelLoadAsOffset = Time.timeSinceLevelLoadAsDouble;
+            var firstFrame = true;
+            var timeSinceLevelLoadAsOffset = Time.timeAsDouble;
 
             while (true)
             {
-                var timeSinceLevelLoadAs = Time.timeSinceLevelLoadAsDouble - timeSinceLevelLoadAsOffset;
+                // 最初のフレームはいろんなものが立ち上がっていて遅いのでスキップする
+                if (firstFrame)
+                {
+                    // 最初の 1f は待機する
+                    yield return null;
+
+                    // 現在の時間を タイマーの Offset として保存しておく
+                    timeSinceLevelLoadAsOffset = Time.timeAsDouble;
+                    firstFrame = false;
+
+                    // API のアクションを実行する
+                    EdaSceneTestStatus._onStartEdaSceneTest?.Invoke();
+
+                    continue;
+                }
 
                 // キャンセルの命令が来た場合はループを抜ける
                 if (_bReceivedCacheRequest)
                 {
                     // 現時点で実行中のテストにキャンセル命令をだす
-                    foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
+                    foreach (var test in _foundedTestCases.Where(x => x.IsRunning))
                     {
                         test.OnCancel();
                     }
@@ -108,14 +132,17 @@ namespace Edanoue.SceneTest
                     break;
                 }
 
+                // テストの実行時間を計算
+                var timeSinceRunTest = Time.timeAsDouble - timeSinceLevelLoadAsOffset;
+
                 // Global の Timeout に達した場合はループを抜ける
-                if (timeSinceLevelLoadAs > globalTimeLimit)
+                if (timeSinceRunTest > globalTimeLimit)
                 {
                     break;
                 }
 
                 // 実行中のテストケース の タイムアウトを確認する
-                foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
+                foreach (var test in _foundedTestCases.Where(x => x.IsRunning))
                 {
                     // まだタイマーが作成されていなかったら作成する
                     if (!localTimeoutTimerMap.ContainsKey(test))
@@ -126,34 +153,34 @@ namespace Edanoue.SceneTest
                         localTimeoutTimerMap.Add(test, localTimeoutSeconds);
                     }
 
-                    if (localTimeoutTimerMap.TryGetValue(test, out var localTimeLimit))
+                    if (!localTimeoutTimerMap.TryGetValue(test, out var localTimeLimit))
                     {
-                        // タイマーを進めて 終了を判定する
-                        if (timeSinceLevelLoadAs > localTimeLimit)
-                        {
-                            // TestCase 側でタイムアウトしたため, OnTimeout を実行する
-                            test.OnTimeout();
-                        }
+                        continue;
+                    }
+
+                    // タイマーを進めて 終了を判定する
+                    if (timeSinceRunTest > localTimeLimit)
+                    {
+                        // TestCase 側でタイムアウトしたため, OnTimeout を実行する
+                        test.OnTimeout();
                     }
                 }
 
                 // まだ完了していないテストがある場合は次のフレームに
-                var isAnyTestRunning = _cachedTestCases.Count(x => x.IsRunning) > 0;
-                if (isAnyTestRunning)
+                if (_foundedTestCases.Any(x => x.IsRunning))
                 {
                     // 1フレーム待機する
-                    yield return new WaitForEndOfFrame();
+                    yield return null;
                     // ループを続行する
                     continue;
                 }
-                // すべてのテストが終了した
 
-                // ループを抜ける
+                // すべてのテストが終了したためループを抜ける
                 break;
             }
 
-            // まだ終了していないテストはタイムアウトとする
-            foreach (var test in _cachedTestCases.Where(x => x.IsRunning))
+            // まだ終了していないテストはタイムアウトとする (Global の Time limit に達したバアー)
+            foreach (var test in _foundedTestCases.Where(x => x.IsRunning))
             {
                 test.OnTimeout();
             }
@@ -162,7 +189,7 @@ namespace Edanoue.SceneTest
 
             // Test Report を収集しておく
             _lastRunningTestReports.Clear();
-            foreach (var test in _cachedTestCases)
+            foreach (var test in _foundedTestCases)
             {
                 var report = test.Report;
 
@@ -174,16 +201,15 @@ namespace Edanoue.SceneTest
 
                 // Custom Info に タイムアウト情報も入れておく
                 {
-                    var globalTimeoutSec = globalTimeLimit;
                     var localTimeoutSec = Mathf.Max(test.Options.LocalTimeoutSeconds, 0.001f);
 
-                    if (globalTimeoutSec > localTimeoutSec)
+                    if (globalTimeLimit > localTimeoutSec)
                     {
                         report.CustomInfos.Add("timeoutSec", $"{localTimeoutSec} (local)");
                     }
                     else
                     {
-                        report.CustomInfos.Add("timeoutSec", $"{globalTimeoutSec} (global)");
+                        report.CustomInfos.Add("timeoutSec", $"{globalTimeLimit} (global)");
                     }
                 }
 
@@ -193,7 +219,7 @@ namespace Edanoue.SceneTest
             // テスト実行の終了
             _isRunning = false;
             // GC のためにキャッシュを空にしておく
-            _cachedTestCases.Clear();
+            _foundedTestCases.Clear();
         }
 
         /// <summary>
@@ -207,16 +233,16 @@ namespace Edanoue.SceneTest
         private void FetchAllITestBehaviour()
         {
             // 一度キャッシュを空にする
-            _cachedTestCases.Clear();
+            _foundedTestCases.Clear();
 
             // ロードしているすべてのシーン内から ITestBehaviour 実装コンポーネントを検索する
             var ss = FindObjectsOfType<MonoBehaviour>().OfType<ITestCase>();
             foreach (var s in ss)
             {
                 // キャッシュに追加する
-                if (!_cachedTestCases.Contains(s))
+                if (!_foundedTestCases.Contains(s))
                 {
-                    _cachedTestCases.Add(s);
+                    _foundedTestCases.Add(s);
                 }
             }
         }
